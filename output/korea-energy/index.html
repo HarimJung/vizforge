@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국 에너지의 대이동 2023</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Mono&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/MotionPathPlugin.min.js"></script>
+<style>
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── Design System ── */
+:root {
+  --bg-deep: #0a1a0a;
+  --bg-card: rgba(255,255,255,0.03);
+  --bg-card-hover: rgba(255,255,255,0.06);
+  --bg-grid: rgba(255,255,255,0.02);
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --accent-1: #53bf9d;
+  --accent-2: #f4a261;
+  --accent-3: #e76f51;
+  --text-1: #e8e8e0;
+  --text-2: #a8c4a0;
+  --text-3: #5a7a52;
+  --text-muted: #3a4a32;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+  --font-label: 'JetBrains Mono', monospace;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  color: var(--text-1);
+  font-family: var(--font-body);
+}
+
+/* ── Background Grid ── */
+#app {
+  width: 100%; height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto auto;
+  position: relative;
+  overflow: hidden;
+}
+#app::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 59px, var(--bg-grid) 59px, var(--bg-grid) 60px),
+    repeating-linear-gradient(90deg, transparent, transparent 59px, var(--bg-grid) 59px, var(--bg-grid) 60px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+}
+#app::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, var(--bg-deep) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Header ── */
+.header {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 28px 24px 8px;
+  opacity: 0;
+}
+.header h1 {
+  font: 700 28px var(--font-display);
+  color: var(--text-1);
+  letter-spacing: 0.02em;
+}
+.header p {
+  font: 400 14px var(--font-body);
+  color: var(--text-2);
+  margin-top: 4px;
+}
+
+/* ── KPI Panel ── */
+.kpi-panel {
+  position: relative; z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 24px;
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px 20px;
+  text-align: center;
+  min-width: 140px;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.kpi-card:hover {
+  border-color: var(--border-hover);
+}
+.kpi-label {
+  font: 500 10px var(--font-label);
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 4px;
+}
+.kpi-value {
+  font: 700 42px var(--font-display);
+  color: var(--text-1);
+  line-height: 1;
+}
+.kpi-unit {
+  font: 400 12px var(--font-body);
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.kpi-bar {
+  height: 3px;
+  border-radius: 2px;
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
+/* ── Category Labels ── */
+.category-labels {
+  position: relative; z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 80px 0;
+}
+.cat-label {
+  font: 500 10px var(--font-label);
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  opacity: 0;
+}
+
+/* ── Sankey Container ── */
+.sankey-container {
+  position: relative; z-index: 1;
+  width: 100%;
+  min-height: 0;
+  padding: 0 24px;
+}
+.sankey-container svg {
+  width: 100%;
+  height: 100%;
+}
+.link-group { isolation: isolate; }
+.sankey-link { mix-blend-mode: screen; cursor: pointer; }
+.sankey-node { cursor: pointer; }
+.node-label {
+  font: 500 11px var(--font-mono);
+  fill: #ccccdd;
+  pointer-events: none;
+}
+.node-value {
+  font: 700 12px var(--font-body);
+  fill: #ffffff;
+  pointer-events: none;
+}
+
+/* ── Detail Panel ── */
+.detail-panel {
+  position: relative; z-index: 2;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0 24px;
+  max-height: 0;
+  overflow: hidden;
+}
+.detail-panel.open {
+  padding: 16px 24px;
+}
+.detail-title {
+  font: 600 16px var(--font-body);
+  color: var(--text-1);
+  margin-bottom: 12px;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.detail-section h3 {
+  font: 500 10px var(--font-label);
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+}
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.detail-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.detail-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+.detail-name {
+  font: 400 12px var(--font-body);
+  color: var(--text-2);
+  min-width: 70px;
+}
+.detail-val {
+  font: 600 12px var(--font-body);
+  color: var(--text-1);
+  min-width: 60px;
+  text-align: right;
+}
+
+/* ── Tooltip ── */
+.tooltip {
+  position: fixed;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font: 12px var(--font-body);
+  color: var(--text-1);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 100;
+  white-space: nowrap;
+}
+.tooltip .tt-flow {
+  font: 500 13px var(--font-body);
+  margin-bottom: 2px;
+}
+.tooltip .tt-value {
+  font: 700 16px var(--font-display);
+  color: var(--accent-1);
+}
+
+/* ── Footer ── */
+.footer {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 8px 24px 16px;
+  font: 400 11px var(--font-body);
+  color: var(--text-muted);
+  opacity: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .kpi-panel { flex-wrap: wrap; }
+  .kpi-card { min-width: 120px; flex: 1 1 45%; }
+  .category-labels { padding: 4px 40px 0; }
+  .header h1 { font-size: 22px; }
+  .kpi-value { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <h1>한국 에너지의 대이동</h1>
+    <p>2023년 1차 에너지 공급 · 변환 · 소비 흐름</p>
+  </div>
+
+  <div class="kpi-panel">
+    <div class="kpi-card" data-color="#53bf9d">
+      <div class="kpi-label">총 에너지 공급</div>
+      <div class="kpi-value" data-target="148.9">0</div>
+      <div class="kpi-unit">Mtoe</div>
+      <div class="kpi-bar" style="background:linear-gradient(90deg,#53bf9d,transparent)"></div>
+    </div>
+    <div class="kpi-card" data-color="#e76f51">
+      <div class="kpi-label">최대 공급원</div>
+      <div class="kpi-value" style="font-size:28px;">석유</div>
+      <div class="kpi-unit">46.0 Mtoe · 30.9%</div>
+      <div class="kpi-bar" style="background:linear-gradient(90deg,#e76f51,transparent)"></div>
+    </div>
+    <div class="kpi-card" data-color="#4ecdc4">
+      <div class="kpi-label">최대 소비</div>
+      <div class="kpi-value" style="font-size:28px;">산업</div>
+      <div class="kpi-unit">51.4 Mtoe · 34.5%</div>
+      <div class="kpi-bar" style="background:linear-gradient(90deg,#4ecdc4,transparent)"></div>
+    </div>
+    <div class="kpi-card" data-color="#555555">
+      <div class="kpi-label">변환 손실률</div>
+      <div class="kpi-value" data-target="18.0">0</div>
+      <div class="kpi-unit">%</div>
+      <div class="kpi-bar" style="background:linear-gradient(90deg,#555555,transparent)"></div>
+    </div>
+  </div>
+
+  <div class="category-labels">
+    <span class="cat-label">공급원 (Source)</span>
+    <span class="cat-label">변환 (Transform)</span>
+    <span class="cat-label">최종 소비 (Consume)</span>
+  </div>
+
+  <div class="sankey-container" id="sankey"></div>
+
+  <div class="detail-panel" id="detail">
+    <div class="detail-title" id="detail-title"></div>
+    <div class="detail-grid">
+      <div class="detail-section" id="detail-in"><h3>유입</h3></div>
+      <div class="detail-section" id="detail-out"><h3>유출</h3></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    한국에너지공단 에너지통계연보 2023 기반 추정 · VizForge
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-flow"></div>
+  <div class="tt-value"></div>
+</div>
+
+<script>
+// ── DATA ──
+const DATA = {
+  "title": "한국 에너지 흐름 2023",
+  "unit": "Mtoe",
+  "nodes": [
+    {"id": "oil", "name": "석유", "category": "source", "color": "#e76f51"},
+    {"id": "gas", "name": "천연가스", "category": "source", "color": "#2a9d8f"},
+    {"id": "coal", "name": "석탄", "category": "source", "color": "#264653"},
+    {"id": "nuclear", "name": "원자력", "category": "source", "color": "#e9c46a"},
+    {"id": "renewable", "name": "재생에너지", "category": "source", "color": "#53bf9d"},
+    {"id": "power", "name": "발전", "category": "transform", "color": "#7209b7"},
+    {"id": "refinery", "name": "정유", "category": "transform", "color": "#f77f00"},
+    {"id": "heat", "name": "열공급", "category": "transform", "color": "#d62828"},
+    {"id": "industry", "name": "산업", "category": "consume", "color": "#4ecdc4"},
+    {"id": "transport", "name": "수송", "category": "consume", "color": "#ff6b6b"},
+    {"id": "residential", "name": "가정", "category": "consume", "color": "#ffd93d"},
+    {"id": "commercial", "name": "상업/공공", "category": "consume", "color": "#6c5ce7"},
+    {"id": "loss", "name": "변환/송전 손실", "category": "consume", "color": "#555555"}
+  ],
+  "links": [
+    {"source": "oil", "target": "refinery", "value": 44.2},
+    {"source": "oil", "target": "power", "value": 1.8},
+    {"source": "gas", "target": "power", "value": 18.5},
+    {"source": "gas", "target": "heat", "value": 3.2},
+    {"source": "gas", "target": "industry", "value": 8.1},
+    {"source": "gas", "target": "residential", "value": 5.8},
+    {"source": "gas", "target": "commercial", "value": 4.4},
+    {"source": "coal", "target": "power", "value": 22.3},
+    {"source": "coal", "target": "industry", "value": 14.7},
+    {"source": "nuclear", "target": "power", "value": 19.1},
+    {"source": "renewable", "target": "power", "value": 5.6},
+    {"source": "renewable", "target": "heat", "value": 1.2},
+    {"source": "power", "target": "industry", "value": 20.8},
+    {"source": "power", "target": "residential", "value": 8.9},
+    {"source": "power", "target": "commercial", "value": 12.5},
+    {"source": "power", "target": "transport", "value": 1.1},
+    {"source": "power", "target": "loss", "value": 24.0},
+    {"source": "refinery", "target": "transport", "value": 33.6},
+    {"source": "refinery", "target": "industry", "value": 7.8},
+    {"source": "refinery", "target": "loss", "value": 2.8},
+    {"source": "heat", "target": "residential", "value": 2.4},
+    {"source": "heat", "target": "commercial", "value": 2.0}
+  ]
+};
+
+const nodeMap = {};
+DATA.nodes.forEach(n => nodeMap[n.id] = n);
+
+// ── SANKEY LAYOUT ──
+const container = document.getElementById('sankey');
+const rect = container.getBoundingClientRect();
+const margin = { top: 8, right: 120, bottom: 8, left: 120 };
+const width = rect.width - margin.left - margin.right;
+const height = rect.height - margin.top - margin.bottom;
+
+const svg = d3.select('#sankey').append('svg')
+  .attr('width', rect.width)
+  .attr('height', rect.height);
+
+const g = svg.append('g')
+  .attr('transform', `translate(${margin.left},${margin.top})`);
+
+// Defs for filters & gradients
+const defs = svg.append('defs');
+
+// ── F1: Glow Filter (subtle) ──
+const glowFilter = defs.append('filter')
+  .attr('id', 'glow')
+  .attr('width', '300%').attr('height', '300%')
+  .attr('x', '-100%').attr('y', '-100%');
+glowFilter.append('feGaussianBlur')
+  .attr('class', 'glow-blur')
+  .attr('in', 'SourceGraphic')
+  .attr('stdDeviation', '2')
+  .attr('result', 'coloredBlur');
+const glowMerge = glowFilter.append('feMerge');
+glowMerge.append('feMergeNode').attr('in', 'coloredBlur');
+glowMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+// ── F1: Glow Filter (strong hover) ──
+const glowHover = defs.append('filter')
+  .attr('id', 'glow-hover')
+  .attr('width', '300%').attr('height', '300%')
+  .attr('x', '-100%').attr('y', '-100%');
+glowHover.append('feGaussianBlur')
+  .attr('in', 'SourceGraphic')
+  .attr('stdDeviation', '6')
+  .attr('result', 'coloredBlur');
+const glowHM = glowHover.append('feMerge');
+glowHM.append('feMergeNode').attr('in', 'coloredBlur');
+glowHM.append('feMergeNode').attr('in', 'SourceGraphic');
+
+// ── F1: Particle glow ──
+const glowParticle = defs.append('filter')
+  .attr('id', 'glow-particle')
+  .attr('width', '300%').attr('height', '300%')
+  .attr('x', '-100%').attr('y', '-100%');
+glowParticle.append('feGaussianBlur')
+  .attr('in', 'SourceGraphic')
+  .attr('stdDeviation', '4')
+  .attr('result', 'coloredBlur');
+const glowPM = glowParticle.append('feMerge');
+glowPM.append('feMergeNode').attr('in', 'coloredBlur');
+glowPM.append('feMergeNode').attr('in', 'SourceGraphic');
+
+// ── F2: Motion Blur ──
+const motionBlur = defs.append('filter')
+  .attr('id', 'motion-blur')
+  .attr('width', '300%').attr('height', '300%')
+  .attr('x', '-100%').attr('y', '-100%')
+  .attr('color-interpolation-filters', 'sRGB');
+motionBlur.append('feGaussianBlur')
+  .attr('class', 'blur-values')
+  .attr('in', 'SourceGraphic')
+  .attr('stdDeviation', '8 0');
+
+// ── Sankey generator ──
+const sankey = d3.sankey()
+  .nodeId(d => d.id)
+  .nodeWidth(20)
+  .nodePadding(16)
+  .nodeAlign(d3.sankeyJustify)
+  .extent([[0, 0], [width, height]]);
+
+const graph = sankey({
+  nodes: DATA.nodes.map(d => ({...d})),
+  links: DATA.links.map(d => ({...d}))
+});
+
+// ── G3: Orientation Gradients for each link ──
+graph.links.forEach((link, i) => {
+  const grad = defs.append('linearGradient')
+    .attr('id', `link-grad-${i}`)
+    .attr('gradientUnits', 'userSpaceOnUse')
+    .attr('x1', link.source.x1)
+    .attr('y1', (link.y0))
+    .attr('x2', link.target.x0)
+    .attr('y2', (link.y1));
+  grad.append('stop').attr('offset', '0%')
+    .attr('stop-color', link.source.color);
+  grad.append('stop').attr('offset', '100%')
+    .attr('stop-color', link.target.color);
+});
+
+// ── G5: Animated Flow Gradients ──
+graph.links.forEach((link, i) => {
+  const grad = defs.append('linearGradient')
+    .attr('id', `flow-grad-${i}`)
+    .attr('gradientUnits', 'userSpaceOnUse')
+    .attr('x1', link.source.x1)
+    .attr('x2', link.target.x0);
+  grad.append('stop').attr('offset', '0%')
+    .attr('stop-color', link.source.color).attr('stop-opacity', 0.1);
+  grad.append('stop').attr('offset', '50%')
+    .attr('stop-color', '#ffffff').attr('stop-opacity', 0.15);
+  grad.append('stop').attr('offset', '100%')
+    .attr('stop-color', link.target.color).attr('stop-opacity', 0.1);
+
+  grad.append('animate')
+    .attr('attributeName', 'x1')
+    .attr('values', `${link.source.x1};${link.target.x0}`)
+    .attr('dur', '7s')
+    .attr('repeatCount', 'indefinite');
+  grad.append('animate')
+    .attr('attributeName', 'x2')
+    .attr('values', `${link.target.x0};${link.target.x0 + (link.target.x0 - link.source.x1)}`)
+    .attr('dur', '7s')
+    .attr('repeatCount', 'indefinite');
+});
+
+// ── Draw Links ──
+const linkGroup = g.append('g').attr('class', 'link-group');
+
+const links = linkGroup.selectAll('.sankey-link')
+  .data(graph.links)
+  .join('path')
+    .attr('class', 'sankey-link')
+    .attr('d', d3.sankeyLinkHorizontal())
+    .attr('stroke', (d, i) => `url(#link-grad-${i})`)
+    .attr('stroke-width', d => Math.max(1, d.width))
+    .attr('fill', 'none')
+    .attr('opacity', 0)
+    .each(function() {
+      const len = this.getTotalLength();
+      d3.select(this)
+        .attr('stroke-dasharray', len)
+        .attr('stroke-dashoffset', len);
+    });
+
+// Flow overlay
+const flowOverlay = linkGroup.selectAll('.flow-overlay')
+  .data(graph.links)
+  .join('path')
+    .attr('class', 'flow-overlay')
+    .attr('d', d3.sankeyLinkHorizontal())
+    .attr('stroke', (d, i) => `url(#flow-grad-${i})`)
+    .attr('stroke-width', d => Math.max(1, d.width))
+    .attr('fill', 'none')
+    .attr('opacity', 0)
+    .style('pointer-events', 'none');
+
+// ── Draw Nodes ──
+const nodeGroup = g.append('g');
+
+const nodes = nodeGroup.selectAll('.sankey-node')
+  .data(graph.nodes)
+  .join('rect')
+    .attr('class', 'sankey-node')
+    .attr('x', d => d.x0)
+    .attr('y', d => d.y0)
+    .attr('width', d => d.x1 - d.x0)
+    .attr('height', d => Math.max(1, d.y1 - d.y0))
+    .attr('fill', d => d.color)
+    .attr('rx', 3)
+    .attr('filter', 'url(#glow)')
+    .attr('opacity', 0)
+    .attr('transform-origin', d => `${(d.x0 + d.x1)/2}px ${(d.y0 + d.y1)/2}px`)
+    .attr('transform', 'scale(0)');
+
+// ── Node Labels ──
+const labelGroup = g.append('g');
+
+const labels = labelGroup.selectAll('.node-label')
+  .data(graph.nodes)
+  .join('text')
+    .attr('class', 'node-label')
+    .attr('x', d => d.x0 < width / 2 ? d.x0 - 8 : d.x1 + 8)
+    .attr('y', d => (d.y0 + d.y1) / 2)
+    .attr('dy', '-0.3em')
+    .attr('text-anchor', d => d.x0 < width / 2 ? 'end' : 'start')
+    .text(d => d.name)
+    .attr('opacity', 0);
+
+const values = labelGroup.selectAll('.node-value')
+  .data(graph.nodes)
+  .join('text')
+    .attr('class', 'node-value')
+    .attr('x', d => d.x0 < width / 2 ? d.x0 - 8 : d.x1 + 8)
+    .attr('y', d => (d.y0 + d.y1) / 2)
+    .attr('dy', '1em')
+    .attr('text-anchor', d => d.x0 < width / 2 ? 'end' : 'start')
+    .text(d => {
+      const total = d.sourceLinks.reduce((s, l) => s + l.value, 0)
+        || d.targetLinks.reduce((s, l) => s + l.value, 0);
+      return total.toFixed(1) + ' Mtoe';
+    })
+    .attr('opacity', 0);
+
+// ── Particles ──
+const particleGroup = g.append('g').attr('class', 'particle-group').attr('opacity', 0);
+
+function createParticles() {
+  graph.links.forEach((link, i) => {
+    const pathNode = links.nodes()[i];
+    const numParticles = link.value > 20 ? 4 : link.value > 10 ? 3 : 2;
+    const dur = link.value > 20 ? 3 : link.value > 10 ? 5 : 7;
+
+    for (let p = 0; p < numParticles; p++) {
+      const particle = particleGroup.append('circle')
+        .attr('r', 2)
+        .attr('fill', link.source.color)
+        .attr('opacity', 0.8)
+        .attr('filter', 'url(#glow-particle)');
+
+      gsap.to(particle.node(), {
+        motionPath: {
+          path: pathNode,
+          align: pathNode,
+          alignOrigin: [0.5, 0.5]
+        },
+        duration: dur,
+        repeat: -1,
+        ease: 'none',
+        delay: p * (dur / numParticles)
+      });
+    }
+  });
+}
+
+// ── Tooltip ──
+const tooltip = document.getElementById('tooltip');
+
+links.on('mouseenter', function(event, d) {
+  const ttFlow = tooltip.querySelector('.tt-flow');
+  const ttValue = tooltip.querySelector('.tt-value');
+  ttFlow.textContent = `${d.source.name} → ${d.target.name}`;
+  ttValue.textContent = `${d.value} Mtoe`;
+
+  gsap.to(tooltip, { opacity: 1, duration: 0.15 });
+  gsap.to(this, { attr: { 'stroke-width': d.width + 2 }, opacity: 0.9, duration: 0.2 });
+
+  // link pulse
+  gsap.to(this, {
+    attr: { 'stroke-width': d.width + 3 },
+    duration: 1, repeat: -1, yoyo: true, ease: 'sine.inOut',
+    overwrite: false, id: 'linkPulse'
+  });
+}).on('mousemove', function(event) {
+  tooltip.style.left = event.clientX + 16 + 'px';
+  tooltip.style.top = event.clientY - 10 + 'px';
+}).on('mouseleave', function(event, d) {
+  gsap.killTweensOf(this, 'linkPulse');
+  gsap.to(tooltip, { opacity: 0, duration: 0.15 });
+  gsap.to(this, { attr: { 'stroke-width': Math.max(1, d.width) }, opacity: 0.4, duration: 0.3 });
+});
+
+// ── Node Hover — Ripple Effect ──
+nodes.on('mouseenter', function(event, d) {
+  // Fade unconnected
+  const connected = new Set();
+  d.sourceLinks.forEach(l => { connected.add(l.target.id); connected.add(l.source.id); });
+  d.targetLinks.forEach(l => { connected.add(l.target.id); connected.add(l.source.id); });
+  connected.add(d.id);
+
+  nodes.transition().duration(300)
+    .attr('opacity', n => connected.has(n.id) ? 1 : 0.15);
+
+  links.transition().duration(300)
+    .attr('opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.8 : 0.05);
+  flowOverlay.transition().duration(300)
+    .attr('opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.6 : 0);
+
+  labels.transition().duration(300)
+    .attr('opacity', n => connected.has(n.id) ? 1 : 0.15);
+  values.transition().duration(300)
+    .attr('opacity', n => connected.has(n.id) ? 1 : 0.15);
+
+  // Glow up
+  d3.select(this).attr('filter', 'url(#glow-hover)');
+  // Pulse
+  gsap.to(this, { scale: 1.05, duration: 0.8, repeat: -1, yoyo: true, ease: 'sine.inOut',
+    transformOrigin: `${(d.x0+d.x1)/2}px ${(d.y0+d.y1)/2}px` });
+
+  // Ripple: stagger highlight connected links
+  const connectedLinks = [];
+  d.sourceLinks.forEach(l => connectedLinks.push(l));
+  d.targetLinks.forEach(l => connectedLinks.push(l));
+  connectedLinks.forEach((l, i) => {
+    const idx = graph.links.indexOf(l);
+    gsap.fromTo(links.nodes()[idx],
+      { opacity: 0.3 },
+      { opacity: 0.8, duration: 0.3, delay: i * 0.05 }
+    );
+  });
+}).on('mouseleave', function(event, d) {
+  gsap.killTweensOf(this);
+  gsap.set(this, { scale: 1, transformOrigin: `${(d.x0+d.x1)/2}px ${(d.y0+d.y1)/2}px` });
+  d3.select(this).attr('filter', 'url(#glow)');
+
+  nodes.transition().duration(500).attr('opacity', 1);
+  links.transition().duration(500).attr('opacity', 0.4);
+  flowOverlay.transition().duration(500).attr('opacity', 0.35);
+  labels.transition().duration(500).attr('opacity', 1);
+  values.transition().duration(500).attr('opacity', 1);
+});
+
+// ── Node Click — Detail Panel ──
+const detailPanel = document.getElementById('detail');
+const detailTitle = document.getElementById('detail-title');
+const detailIn = document.getElementById('detail-in');
+const detailOut = document.getElementById('detail-out');
+let activeNode = null;
+
+nodes.on('click', function(event, d) {
+  if (activeNode === d.id) {
+    gsap.to(detailPanel, { maxHeight: 0, padding: '0 24px', duration: 0.4, ease: 'power2.inOut' });
+    activeNode = null;
+    return;
+  }
+  activeNode = d.id;
+
+  const totalIn = d.targetLinks.reduce((s, l) => s + l.value, 0);
+  const totalOut = d.sourceLinks.reduce((s, l) => s + l.value, 0);
+
+  detailTitle.textContent = `${d.name} — ${(totalIn || totalOut).toFixed(1)} Mtoe`;
+  detailTitle.style.color = d.color;
+
+  // Inflows
+  let inHTML = '<h3>유입</h3>';
+  if (d.targetLinks.length === 0) {
+    inHTML += '<div style="color:var(--text-3);font-size:12px">1차 에너지원 (직접 공급)</div>';
+  } else {
+    d.targetLinks.sort((a, b) => b.value - a.value).forEach(l => {
+      const pct = (l.value / totalIn * 100).toFixed(0);
+      inHTML += `<div class="detail-item">
+        <span class="detail-name">${l.source.name}</span>
+        <div class="detail-bar-bg"><div class="detail-bar-fill" style="width:${pct}%;background:${l.source.color}"></div></div>
+        <span class="detail-val">${l.value} Mtoe</span>
+      </div>`;
+    });
+  }
+  detailIn.innerHTML = inHTML;
+
+  // Outflows
+  let outHTML = '<h3>유출</h3>';
+  if (d.sourceLinks.length === 0) {
+    outHTML += '<div style="color:var(--text-3);font-size:12px">최종 소비</div>';
+  } else {
+    d.sourceLinks.sort((a, b) => b.value - a.value).forEach(l => {
+      const pct = (l.value / totalOut * 100).toFixed(0);
+      outHTML += `<div class="detail-item">
+        <span class="detail-name">${l.target.name}</span>
+        <div class="detail-bar-bg"><div class="detail-bar-fill" style="width:${pct}%;background:${l.target.color}"></div></div>
+        <span class="detail-val">${l.value} Mtoe</span>
+      </div>`;
+    });
+  }
+  detailOut.innerHTML = outHTML;
+
+  gsap.to(detailPanel, { maxHeight: 200, padding: '16px 24px', duration: 0.4, ease: 'power2.out' });
+});
+
+// Click outside to close
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.sankey-node') && !e.target.closest('.detail-panel')) {
+    gsap.to(detailPanel, { maxHeight: 0, padding: '0 24px', duration: 0.4, ease: 'power2.inOut' });
+    activeNode = null;
+  }
+});
+
+// ── Node Drag ──
+nodes.call(d3.drag()
+  .on('start', function(event, d) {
+    d3.select(this).attr('filter', 'url(#motion-blur)');
+  })
+  .on('drag', function(event, d) {
+    const dy = event.dy;
+    d.y0 += dy;
+    d.y1 += dy;
+    d3.select(this).attr('y', d.y0);
+    sankey.update(graph);
+    links.attr('d', d3.sankeyLinkHorizontal());
+    flowOverlay.attr('d', d3.sankeyLinkHorizontal());
+    // Update labels
+    labels.attr('y', n => (n.y0 + n.y1) / 2);
+    values.attr('y', n => (n.y0 + n.y1) / 2);
+  })
+  .on('end', function() {
+    d3.select(this).attr('filter', 'url(#glow)');
+  })
+);
+
+// ── LOADING ANIMATION SEQUENCE ──
+const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+// Background grid
+tl.to('#app::before', { opacity: 1, duration: 1 }, 0);
+// Workaround: animate pseudo via class
+tl.to(document.getElementById('app'), { '--grid-opacity': 1, duration: 1 }, 0);
+document.getElementById('app').style.setProperty('--grid-opacity', '0');
+// Actually animate the pseudo element opacity via a real element
+tl.fromTo('#app', {}, { duration: 0.01, onStart: () => {
+  document.querySelector('#app').style.cssText += '';
+}}, 0);
+
+// Header
+tl.fromTo('.header', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, 0.3);
+
+// Category labels
+tl.fromTo('.cat-label', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.15 }, 0.8);
+
+// Source nodes (left), then transform (middle), then consume (right)
+const sourceNodes = graph.nodes.filter(n => n.category === 'source');
+const transformNodes = graph.nodes.filter(n => n.category === 'transform');
+const consumeNodes = graph.nodes.filter(n => n.category === 'consume');
+
+function animateNodes(nodeData, startTime) {
+  nodeData.forEach((n, i) => {
+    const el = nodes.nodes()[graph.nodes.indexOf(n)];
+    tl.to(el, {
+      opacity: 1,
+      attr: { transform: 'scale(1)' },
+      duration: 0.5,
+      ease: 'back.out(1.7)'
+    }, startTime + i * 0.08);
+  });
+}
+
+animateNodes(sourceNodes, 1.0);
+animateNodes(transformNodes, 1.5);
+animateNodes(consumeNodes, 2.0);
+
+// Links drawing
+tl.to(links.nodes(), {
+  attr: { 'stroke-dashoffset': 0 },
+  opacity: 0.4,
+  duration: 0.8,
+  stagger: 0.05,
+  ease: 'power2.inOut'
+}, 2.3);
+
+// Flow overlay
+tl.to(flowOverlay.nodes(), {
+  opacity: 0.35,
+  duration: 0.5
+}, 3.0);
+
+// Labels
+tl.to(labels.nodes(), { opacity: 1, duration: 0.3, stagger: 0.04 }, 3.3);
+tl.to(values.nodes(), { opacity: 1, duration: 0.3, stagger: 0.04 }, 3.5);
+
+// KPI cards
+tl.to('.kpi-card', { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 }, 3.8);
+
+// KPI countup
+tl.add(() => {
+  document.querySelectorAll('.kpi-value[data-target]').forEach(el => {
+    const target = parseFloat(el.dataset.target);
+    gsap.fromTo(el, { innerText: 0 }, {
+      innerText: target,
+      duration: 1.2,
+      ease: 'power2.out',
+      snap: { innerText: 0.1 },
+      onUpdate: function() {
+        el.textContent = parseFloat(el.textContent).toFixed(1);
+      }
+    });
+  });
+}, 4.0);
+
+// Particles
+tl.add(() => {
+  createParticles();
+  gsap.to(particleGroup.node(), { opacity: 1, duration: 0.5 });
+}, 5.0);
+
+// Node glow pulse (after loading)
+tl.add(() => {
+  nodes.each(function() {
+    gsap.to(d3.select(this).select(function() { return this; }).node(), {
+      // We can't easily animate filter stdDeviation with GSAP on SVG,
+      // so we'll use a subtle scale pulse instead
+    });
+  });
+  // Animate the glow filter stdDeviation
+  const glowBlur = document.querySelector('#glow .glow-blur');
+  gsap.to(glowBlur, {
+    attr: { stdDeviation: 3.5 },
+    duration: 2,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  });
+}, 5.2);
+
+// Footer
+tl.fromTo('.footer', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 5.3);
+
+// ── Background grid animation ──
+tl.add(() => {
+  const appEl = document.getElementById('app');
+  const style = document.createElement('style');
+  style.textContent = `
+    #app::before { opacity: 0.5; animation: gridMove 20s linear infinite; }
+    @keyframes gridMove { 0% { transform: translateY(0); } 100% { transform: translateY(-60px); } }
+  `;
+  document.head.appendChild(style);
+}, 0.5);
+</script>
+</body>
+</html>

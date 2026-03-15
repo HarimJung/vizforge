@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hidden Grid — AI가 삼키는 전력</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Mono&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Three.js ES module resolution -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<!-- CDN Libraries (defer — non-blocking, execute before module scripts) -->
+<script defer src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/scrollama@3"></script>
+
+<style>
+/* ── Variables ── */
+:root {
+  --bg-deep: #050510;
+  --bg-card: rgba(255,255,255,0.03);
+  --border-subtle: rgba(255,255,255,0.06);
+  --accent-1: #00ffd5;
+  --accent-2: #ff4466;
+  --accent-3: #ffd93d;
+  --text-1: #ffffff;
+  --text-2: #88ccff;
+  --text-3: #556677;
+  --text-muted: #334455;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-title: 'Space Grotesk', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+  --font-label: 'JetBrains Mono', monospace;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-deep);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scene 0: Intro (separate section, above scroll-container) ── */
+#intro {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.intro-eyebrow {
+  font-family: var(--font-label);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+
+.intro-title {
+  font-family: var(--font-title);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.intro-subtitle {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: #ccccdd;
+  margin-bottom: 48px;
+}
+
+/* KPI comparison block */
+.kpi-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+.kpi-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kpi-number {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+}
+
+.kpi-number.accent-2 { color: var(--accent-2); }
+.kpi-number.accent-1 { color: var(--accent-1); }
+
+.kpi-unit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-2);
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+.kpi-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+.kpi-vs-divider {
+  font-family: var(--font-label);
+  font-size: 14px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* Stat cards row */
+.stat-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 56px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  padding: 16px 20px;
+  min-width: 160px;
+  text-align: center;
+}
+
+.stat-card-number {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+}
+
+.stat-card-number.accent-3 { color: var(--accent-3); }
+.stat-card-number.accent-2 { color: var(--accent-2); }
+.stat-card-number.accent-1 { color: var(--accent-1); }
+
+.stat-card-unit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-2);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+.stat-card-desc {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* Scroll hint */
+.scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.scroll-hint-text {
+  font-family: var(--font-label);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.scroll-hint-arrow {
+  width: 20px;
+  height: 20px;
+  border-right: 1px solid var(--text-muted);
+  border-bottom: 1px solid var(--text-muted);
+  transform: rotate(45deg);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: rotate(45deg) translateY(0); }
+  50% { opacity: 0.7; transform: rotate(45deg) translateY(4px); }
+}
+
+/* ── Scroll Container ── */
+.scroll-container {
+  position: relative;
+}
+
+.scroll-graphic {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+}
+
+#three-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#svg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 0;
+}
+
+#ui-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* UI overlay elements */
+.scene-title {
+  position: absolute;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-title);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.kpi-panel {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  padding: 16px 20px;
+  pointer-events: auto;
+  opacity: 0;
+}
+
+.detail-panel {
+  position: absolute;
+  top: 50%;
+  right: 32px;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  padding: 16px 20px;
+  max-width: 280px;
+  pointer-events: auto;
+  opacity: 0;
+}
+
+.scenario-toggle {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+  opacity: 0;
+}
+
+.credit {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Scroll Steps ── */
+.scroll-steps {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  pointer-events: none;
+}
+
+.step[data-step="0"] { height: 100vh; }
+.step[data-step="1"] { height: 150vh; }
+.step[data-step="2"] { height: 150vh; }
+.step[data-step="3"] { height: 100vh; }
+
+.step-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  padding: 16px 20px;
+  max-width: 340px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: #ccccdd;
+  line-height: 1.6;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.step-content.is-active {
+  opacity: 1;
+}
+
+/* ── Components ── */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  padding: 16px 20px;
+}
+
+.tooltip {
+  position: absolute;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-1);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 100;
+}
+
+.btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+}
+
+.btn.active {
+  background: var(--accent-1);
+  color: var(--bg-deep);
+}
+
+/* ── Responsive ── */
+
+/* 768~1279px */
+@media (max-width: 1279px) {
+  .intro-title { font-size: 28px; }
+  .kpi-number { font-size: 40px; }
+  .stat-card-number { font-size: 28px; }
+  .stat-card { min-width: 140px; padding: 12px 16px; }
+  .kpi-vs { gap: 24px; }
+}
+
+/* <768px */
+@media (max-width: 767px) {
+  .intro-title { font-size: 24px; }
+  .kpi-number { font-size: 36px; }
+  .kpi-vs { gap: 16px; }
+  .stat-cards { flex-direction: column; align-items: center; }
+  .stat-card { min-width: 240px; }
+  .step-content { max-width: 280px; font-size: 14px; }
+  .kpi-panel { top: 16px; left: 16px; }
+  .detail-panel { right: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ Scene 0: Intro ════════════════ -->
+<section id="intro">
+  <p class="intro-eyebrow">Global Data Center Energy Flow 2024</p>
+  <h1 class="intro-title">The Hidden Grid — AI가 삼키는 전력</h1>
+  <p class="intro-subtitle">Every time you ask AI a question, it uses 10x more electricity than a Google search.</p>
+
+  <!-- KPI: 2.9 vs 0.3 -->
+  <div class="kpi-vs">
+    <div class="kpi-item">
+      <span class="kpi-number accent-2">2.9</span>
+      <span class="kpi-unit">Wh / query</span>
+      <span class="kpi-label">ChatGPT</span>
+    </div>
+    <span class="kpi-vs-divider">vs</span>
+    <div class="kpi-item">
+      <span class="kpi-number accent-1">0.3</span>
+      <span class="kpi-unit">Wh / query</span>
+      <span class="kpi-label">Google Search</span>
+    </div>
+  </div>
+
+  <!-- 3 Stat Cards -->
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-card-number accent-3">415</div>
+      <div class="stat-card-unit">TWh / year</div>
+      <div class="stat-card-desc">전 세계 데이터센터<br>연간 전력 소비</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-number accent-2">60%</div>
+      <div class="stat-card-unit">Fossil Fuel</div>
+      <div class="stat-card-desc">데이터센터 전력 중<br>화석연료 비중</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-number accent-1">945</div>
+      <div class="stat-card-unit">TWh by 2030</div>
+      <div class="stat-card-desc">2030년 예상<br>전력 소비량</div>
+    </div>
+  </div>
+
+  <!-- Scroll Hint -->
+  <div class="scroll-hint">
+    <span class="scroll-hint-text">Scroll to explore</span>
+    <div class="scroll-hint-arrow"></div>
+  </div>
+</section>
+
+<!-- ════════════════ Scroll Container ════════════════ -->
+<div class="scroll-container">
+
+  <!-- Sticky graphic layer -->
+  <div class="scroll-graphic">
+    <canvas id="three-canvas"></canvas>
+    <div id="svg-container"></div>
+    <div id="ui-overlay">
+      <div class="kpi-panel"></div>
+      <div class="scene-title"></div>
+      <div class="detail-panel"></div>
+      <div class="scenario-toggle"></div>
+      <div class="credit">Source: IEA, LBNL, Company Sustainability Reports (2023-2025)</div>
+    </div>
+  </div>
+
+  <!-- Scroll steps -->
+  <div class="scroll-steps">
+    <div class="step" data-step="0">
+      <div class="step-content">
+        <p>415 TWh — 남아프리카 전체를 두 번 밝힐 수 있는 전력이 데이터센터에 쓰이고 있습니다.</p>
+      </div>
+    </div>
+    <div class="step" data-step="1">
+      <div class="step-content">
+        <p>그 전력은 어디에서 올까요? 60%는 여전히 화석연료입니다.</p>
+      </div>
+    </div>
+    <div class="step" data-step="2">
+      <div class="step-content">
+        <p>100W 중 24W는 서버가 아닌 냉각에 사용됩니다.</p>
+      </div>
+    </div>
+    <div class="step" data-step="3">
+      <div class="step-content">
+        <p>2030년, 전력은 두 배가 됩니다. 하지만 더 깨끗해질 수 있습니다 — 우리가 선택한다면.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Tooltip (shared) -->
+<div class="tooltip" id="tooltip"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
