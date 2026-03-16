@@ -1,3 +1,4 @@
+> ⚠️ 이 파일의 HEX 색상·폰트·배경색은 참고용이다. 실제 출력은 선택된 템플릿의 :root CSS 변수를 사용한다. Three.js scene.background 등 3D 환경색만 예외.
 # COMBO-6: Network Graph
 
 ## 라이브러리 (노드 수 분기)
