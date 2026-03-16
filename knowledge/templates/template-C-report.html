@@ -1,0 +1,190 @@
+<!-- ============================================
+     TEMPLATE C — Report / Poster
+     knowledge/templates/template-C-report.html
+     
+     레퍼: McKinsey + Biodiversity Poster
+     그림자 레이어감. 차트가 카드 안에서 떠 있는 느낌.
+     ============================================ -->
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- {{CDN_LIBS}} -->
+<style>
+:root {
+  --c1:#009FDA;--c2:#EC008C;--c3:#FF9900;--c4:#81C800;--c5:#FED100;--c6:#1F145D;--gray:#9C9C9C;
+  --c1-60:#66C5E8;--c2-60:#F466B8;--c3-60:#FFB866;--c4-60:#ADD966;--c5-60:#FEDF66;--c6-60:#7F7A9E;
+  --bg:#F2F0EC;--bg-elevated:#FFFFFF;
+  --text-h1:#111111;--text-body:#444444;--text-label:#666666;--text-muted:#AAAAAA;
+  --border:rgba(0,0,0,.06);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);--shadow-md:0 4px 20px rgba(0,0,0,.07);--shadow-lg:0 12px 48px rgba(0,0,0,.10);
+  --shadow-card:0 2px 12px rgba(0,0,0,.05);
+}
+[data-theme="dark"]{
+  --bg:#0B0B1A;--bg-elevated:rgba(255,255,255,.04);
+  --text-h1:#FFFFFF;--text-body:#CCCCDD;--text-label:#88AACC;--text-muted:#556677;
+  --border:rgba(255,255,255,.06);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 20px rgba(0,0,0,.4);--shadow-lg:0 12px 48px rgba(0,0,0,.5);
+  --shadow-card:0 2px 12px rgba(0,0,0,.4);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{
+  font-family:'Noto Sans KR',-apple-system,sans-serif;
+  background:var(--bg);color:var(--text-body);
+  transition:background .5s,color .5s;
+  overflow-x:hidden;line-height:1.6;
+}
+
+.report{max-width:920px;margin:0 auto;padding:64px 48px 48px}
+
+/* ─── Accent strip (상단 얇은 줄) ─── */
+.accent{height:4px;background:linear-gradient(90deg,var(--c1),var(--c2));border-radius:2px;margin-bottom:48px}
+
+/* ─── Title ─── */
+.report-title h1{
+  font-size:clamp(26px,3.5vw,38px);font-weight:700;
+  color:var(--text-h1);line-height:1.2;letter-spacing:-.02em;
+}
+.report-title .sub{
+  font-size:15px;font-weight:300;color:var(--text-label);
+  margin-top:10px;line-height:1.5;
+}
+.report-title{margin-bottom:40px}
+
+/* ─── KPI row (border 없이, 여백으로 구분) ─── */
+.kpi-row{display:flex;gap:40px;margin-bottom:48px}
+.kpi-item .num{font-size:clamp(28px,3vw,42px);font-weight:700;line-height:1}
+.kpi-item .unit{font-size:12px;font-weight:500;color:var(--text-label);margin-top:2px}
+.kpi-item .desc{font-size:11px;color:var(--text-muted);margin-top:4px}
+
+/* ─── Chart card (그림자 레이어감 = "화면 안 화면") ─── */
+.chart-card{
+  background:var(--bg-elevated);
+  border-radius:16px;
+  box-shadow:var(--shadow-lg);
+  padding:40px;
+  margin-bottom:40px;
+  position:relative;
+  overflow:hidden;
+}
+.chart-card svg,.chart-card canvas{display:block;width:100%;height:auto}
+.chart-card .card-title{
+  font-size:15px;font-weight:600;color:var(--text-h1);
+  margin-bottom:20px;
+}
+
+/* ─── Body text ─── */
+.body-section{margin-bottom:40px}
+.body-section h2{font-size:20px;font-weight:700;color:var(--text-h1);margin-bottom:14px;line-height:1.3}
+.body-section p{font-size:14px;line-height:1.85;color:var(--text-body);margin-bottom:14px}
+
+/* ─── Two-col charts ─── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:40px}
+.two-col .chart-card{margin-bottom:0}
+
+/* ─── Source ─── */
+.report-footer{
+  padding-top:20px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;
+}
+.report-footer span{font-size:10px;color:var(--text-muted)}
+
+/* Common */
+.vf-tip{position:absolute;pointer-events:none;background:var(--bg-elevated);color:var(--text-body);font-size:12px;padding:10px 16px;border-radius:8px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .15s;z-index:200;max-width:260px;line-height:1.5}
+.theme-btn{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--bg-elevated);box-shadow:var(--shadow-md);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:300;transition:box-shadow .2s}
+.theme-btn:hover{box-shadow:var(--shadow-lg)}
+.vf-load{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+.vf-load.hide{opacity:0;pointer-events:none}
+.vf-load-dots{display:flex;gap:6px}
+.vf-load-dot{width:8px;height:8px;border-radius:50%;background:var(--c1);animation:vf-pulse .8s ease infinite alternate}
+.vf-load-dot:nth-child(2){animation-delay:.15s}
+.vf-load-dot:nth-child(3){animation-delay:.3s}
+@keyframes vf-pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+@media print{
+  body{background:#fff!important;color:#000!important}
+  .theme-btn,.vf-load{display:none!important}
+  .chart-card{box-shadow:none;border:1px solid #ddd}
+}
+@media(max-width:768px){
+  .report{padding:32px 24px}
+  .kpi-row{flex-wrap:wrap;gap:24px}
+  .two-col{grid-template-columns:1fr}
+  .chart-card{padding:24px;border-radius:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="vf-load" id="loader"><div class="vf-load-dots"><div class="vf-load-dot"></div><div class="vf-load-dot"></div><div class="vf-load-dot"></div></div></div>
+
+<main class="report">
+
+  <div class="accent"></div>
+
+  <div class="report-title">
+    <h1>{{TITLE}}</h1>
+    <p class="sub">{{SUBTITLE}}</p>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-item">
+      <div class="num" style="color:var(--c1)">{{KPI_1}}</div>
+      <div class="unit">{{UNIT_1}}</div>
+      <div class="desc">{{DESC_1}}</div>
+    </div>
+    <div class="kpi-item">
+      <div class="num" style="color:var(--c3)">{{KPI_2}}</div>
+      <div class="unit">{{UNIT_2}}</div>
+      <div class="desc">{{DESC_2}}</div>
+    </div>
+    <div class="kpi-item">
+      <div class="num" style="color:var(--c2)">{{KPI_3}}</div>
+      <div class="unit">{{UNIT_3}}</div>
+      <div class="desc">{{DESC_3}}</div>
+    </div>
+  </div>
+
+  <div class="chart-card" id="chartWrap">
+    <div class="card-title">{{CHART_TITLE}}</div>
+    <!-- ═══ MAIN CHART HERE ═══ -->
+    <div class="vf-tip" id="tooltip"></div>
+  </div>
+
+  <div class="body-section">
+    <h2>{{SECTION_TITLE}}</h2>
+    <p>{{SECTION_TEXT}}</p>
+  </div>
+
+  <div class="two-col">
+    <div class="chart-card" id="chart2">
+      <div class="card-title">{{CHART_2_TITLE}}</div>
+      <!-- ═══ CHART 2 HERE ═══ -->
+    </div>
+    <div class="chart-card" id="chart3">
+      <div class="card-title">{{CHART_3_TITLE}}</div>
+      <!-- ═══ CHART 3 HERE ═══ -->
+    </div>
+  </div>
+
+  <div class="report-footer">
+    <span>{{SOURCE}}</span>
+    <span>vizforge</span>
+  </div>
+
+</main>
+
+<button class="theme-btn" id="themeBtn">☀️</button>
+
+<script>
+const t=document.getElementById('themeBtn');let d=false;
+t.addEventListener('click',()=>{d=!d;document.documentElement.setAttribute('data-theme',d?'dark':'light');t.textContent=d?'🌙':'☀️'});
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('hide'),400));
+/* ═══ COMBO SCRIPT HERE ═══ */
+</script>
+</body>
+</html>

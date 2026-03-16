@@ -1,0 +1,245 @@
+<!-- ============================================
+     TEMPLATE A — Single Interactive (Full-bleed)
+     knowledge/templates/template-A-interactive.html
+     
+     레퍼: OECD Plastic Flow (Visual Cinnamon)
+     차트가 주인공. UI 최소. 여백이 디자인.
+     ============================================ -->
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- {{CDN_LIBS}} -->
+<style>
+/* ═══ BRAND TOKENS ═══ */
+:root {
+  --c1:#009FDA; --c2:#EC008C; --c3:#FF9900;
+  --c4:#81C800; --c5:#FED100; --c6:#1F145D;
+  --gray:#9C9C9C;
+  --c1-60:#66C5E8; --c2-60:#F466B8; --c3-60:#FFB866;
+  --c4-60:#ADD966; --c5-60:#FEDF66; --c6-60:#7F7A9E;
+
+  --bg: #FAFAFA;
+  --bg-elevated: #FFFFFF;
+  --text-h1: #111111;
+  --text-body: #444444;
+  --text-label: #666666;
+  --text-muted: #AAAAAA;
+  --border: rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.08);
+}
+[data-theme="dark"] {
+  --bg: #0B0B1A;
+  --bg-elevated: rgba(255,255,255,.04);
+  --text-h1: #FFFFFF;
+  --text-body: #CCCCDD;
+  --text-label: #88AACC;
+  --text-muted: #556677;
+  --border: rgba(255,255,255,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+}
+
+/* ═══ RESET ═══ */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
+html { font-size:16px; -webkit-font-smoothing:antialiased }
+body {
+  font-family:'Noto Sans KR', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-body);
+  transition: background .5s ease, color .5s ease;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ═══ TYPOGRAPHY ═══ */
+.t-hero    { font-size:clamp(28px,4vw,42px); font-weight:700; color:var(--text-h1); line-height:1.2; letter-spacing:-.02em }
+.t-sub     { font-size:clamp(14px,1.5vw,17px); font-weight:300; color:var(--text-label); line-height:1.5; margin-top:12px }
+.t-kpi-num { font-size:clamp(28px,3vw,48px); font-weight:700; line-height:1 }
+.t-kpi-unit{ font-size:12px; font-weight:500; color:var(--text-label); margin-top:2px }
+.t-kpi-desc{ font-size:11px; font-weight:400; color:var(--text-muted); margin-top:6px; letter-spacing:.02em }
+.t-label   { font-size:11px; font-weight:500; color:var(--text-label) }
+.t-source  { font-size:10px; font-weight:400; color:var(--text-muted) }
+.t-node    { font-size:11px; font-weight:600; fill:var(--text-h1) }
+.t-value   { font-size:10px; font-weight:400; fill:var(--text-muted) }
+
+/* ═══ PAGE LAYOUT — 여백 중심, UI 최소 ═══ */
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 60px 64px 40px;
+}
+
+/* ─── Title block ─── */
+.title-block {
+  max-width: 600px;
+  margin-bottom: 48px;
+}
+
+/* ─── KPI strip (제목 아래, 가로 나열, border 없음) ─── */
+.kpi-strip {
+  display: flex;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.kpi-item {
+  /* 카드 아님. border 없음. 그냥 텍스트 그룹 */
+}
+
+/* ─── Chart area (메인, 풀 와이드) ─── */
+.chart-area {
+  position: relative;
+  width: 100%;
+  background: var(--bg-elevated);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 40px;
+  margin-bottom: 40px;
+  min-height: 500px;
+}
+.chart-area svg, .chart-area canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ─── Legend (차트 위, 심플) ─── */
+.legend-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.legend-item { display:flex; align-items:center; gap:6px }
+.legend-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0 }
+
+/* ─── Source footer ─── */
+.source-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── Tooltip ─── */
+.vf-tip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg-elevated);
+  color: var(--text-body);
+  font-size: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 200;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+/* ─── Theme toggle (우하단 고정, 작게) ─── */
+.theme-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  transition: box-shadow .2s;
+}
+.theme-btn:hover { box-shadow: var(--shadow-lg) }
+
+/* ─── Loading ─── */
+.vf-load {
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999;transition:opacity .4s;
+}
+.vf-load.hide{opacity:0;pointer-events:none}
+.vf-load-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c1);
+  animation:vf-pulse .8s ease infinite alternate;
+}
+.vf-load-dot:nth-child(2){animation-delay:.15s}
+.vf-load-dot:nth-child(3){animation-delay:.3s}
+@keyframes vf-pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.vf-load-dots{display:flex;gap:6px}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .page{padding:32px 24px 24px}
+  .kpi-strip{gap:24px;flex-wrap:wrap}
+  .chart-area{padding:20px;border-radius:12px}
+  .title-block{margin-bottom:32px}
+}
+</style>
+</head>
+<body>
+
+<div class="vf-load" id="loader"><div class="vf-load-dots"><div class="vf-load-dot"></div><div class="vf-load-dot"></div><div class="vf-load-dot"></div></div></div>
+
+<main class="page">
+
+  <div class="title-block">
+    <h1 class="t-hero">{{TITLE}}</h1>
+    <p class="t-sub">{{SUBTITLE}}</p>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi-item">
+      <div class="t-kpi-num" style="color:var(--c1)">{{KPI_1}}</div>
+      <div class="t-kpi-unit">{{UNIT_1}}</div>
+      <div class="t-kpi-desc">{{DESC_1}}</div>
+    </div>
+    <div class="kpi-item">
+      <div class="t-kpi-num" style="color:var(--c3)">{{KPI_2}}</div>
+      <div class="t-kpi-unit">{{UNIT_2}}</div>
+      <div class="t-kpi-desc">{{DESC_2}}</div>
+    </div>
+    <div class="kpi-item">
+      <div class="t-kpi-num" style="color:var(--c2)">{{KPI_3}}</div>
+      <div class="t-kpi-unit">{{UNIT_3}}</div>
+      <div class="t-kpi-desc">{{DESC_3}}</div>
+    </div>
+  </div>
+
+  <div class="chart-area" id="chartWrap">
+    <div class="legend-row">
+      <!-- {{LEGEND}} -->
+    </div>
+    <!-- ═══ CHART HERE ═══ -->
+    <div class="vf-tip" id="tooltip"></div>
+  </div>
+
+  <div class="source-bar">
+    <span class="t-source">{{SOURCE}}</span>
+    <span class="t-source">vizforge</span>
+  </div>
+
+</main>
+
+<button class="theme-btn" id="themeBtn">☀️</button>
+
+<script>
+const t=document.getElementById('themeBtn');let d=false;
+t.addEventListener('click',()=>{d=!d;document.documentElement.setAttribute('data-theme',d?'dark':'light');t.textContent=d?'🌙':'☀️'});
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('hide'),400));
+/* ═══ COMBO SCRIPT HERE ═══ */
+</script>
+</body>
+</html>

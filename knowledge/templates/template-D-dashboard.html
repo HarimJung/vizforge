@@ -1,0 +1,195 @@
+<!-- ============================================
+     TEMPLATE D — Dashboard (Minimal)
+     knowledge/templates/template-D-dashboard.html
+     
+     레퍼: McKinsey 차트 페이지
+     흰 배경, border 없는 그리드, 여백 구분
+     ============================================ -->
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- {{CDN_LIBS}} -->
+<style>
+:root {
+  --c1:#009FDA;--c2:#EC008C;--c3:#FF9900;--c4:#81C800;--c5:#FED100;--c6:#1F145D;--gray:#9C9C9C;
+  --c1-60:#66C5E8;--c2-60:#F466B8;--c3-60:#FFB866;--c4-60:#ADD966;--c5-60:#FEDF66;--c6-60:#7F7A9E;
+  --bg:#FAFAFA;--bg-elevated:#FFFFFF;
+  --text-h1:#111111;--text-body:#444444;--text-label:#666666;--text-muted:#AAAAAA;
+  --border:rgba(0,0,0,.06);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);--shadow-md:0 4px 20px rgba(0,0,0,.06);--shadow-lg:0 8px 40px rgba(0,0,0,.08);
+}
+[data-theme="dark"]{
+  --bg:#0B0B1A;--bg-elevated:rgba(255,255,255,.04);
+  --text-h1:#FFFFFF;--text-body:#CCCCDD;--text-label:#88AACC;--text-muted:#556677;
+  --border:rgba(255,255,255,.06);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 20px rgba(0,0,0,.4);--shadow-lg:0 8px 40px rgba(0,0,0,.5);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{
+  font-family:'Noto Sans KR',-apple-system,sans-serif;
+  background:var(--bg);color:var(--text-body);
+  transition:background .5s,color .5s;
+  overflow-x:hidden;height:100vh;display:flex;flex-direction:column;
+}
+
+/* ─── Header (얇고 미니멀) ─── */
+.dash-head{
+  padding:20px 40px 0;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  flex-shrink:0;
+}
+.dash-head h1{font-size:22px;font-weight:700;color:var(--text-h1);line-height:1.3}
+.dash-head .sub{font-size:13px;font-weight:300;color:var(--text-muted);margin-top:2px}
+
+/* ─── KPI strip ─── */
+.kpi-strip{
+  display:flex;gap:48px;padding:24px 40px 0;flex-shrink:0;
+}
+.kpi-item .num{font-size:32px;font-weight:700;line-height:1}
+.kpi-item .unit{font-size:11px;font-weight:500;color:var(--text-label);margin-top:2px}
+.kpi-item .desc{font-size:10px;color:var(--text-muted);margin-top:4px}
+
+/* ─── Filter tabs ─── */
+.filter-row{
+  display:flex;gap:4px;padding:20px 40px 0;flex-shrink:0;
+}
+.filter-tab{
+  background:transparent;border:none;
+  padding:6px 16px;border-radius:20px;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:12px;font-weight:500;color:var(--text-label);
+  cursor:pointer;transition:all .2s;
+}
+.filter-tab:hover{background:var(--border)}
+.filter-tab.on{background:var(--c1);color:#fff}
+
+/* ─── Chart grid ─── */
+.grid{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:24px;
+  padding:24px 40px;
+}
+.cell{
+  background:var(--bg-elevated);
+  border-radius:14px;
+  box-shadow:var(--shadow-md);
+  padding:24px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+.cell .cell-title{font-size:13px;font-weight:600;color:var(--text-h1);margin-bottom:16px}
+.cell .cell-body{flex:1;min-height:0;position:relative}
+.cell .cell-body svg,.cell .cell-body canvas{width:100%;height:100%;display:block}
+.cell.wide{grid-column:1/-1}
+
+/* ─── Footer ─── */
+.dash-foot{
+  padding:0 40px 16px;
+  display:flex;justify-content:space-between;flex-shrink:0;
+}
+.dash-foot span{font-size:10px;color:var(--text-muted)}
+
+/* Common */
+.vf-tip{position:absolute;pointer-events:none;background:var(--bg-elevated);color:var(--text-body);font-size:12px;padding:10px 16px;border-radius:8px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .15s;z-index:200;max-width:260px;line-height:1.5}
+.theme-btn{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--bg-elevated);box-shadow:var(--shadow-md);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:300;transition:box-shadow .2s}
+.theme-btn:hover{box-shadow:var(--shadow-lg)}
+.vf-load{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+.vf-load.hide{opacity:0;pointer-events:none}
+.vf-load-dots{display:flex;gap:6px}
+.vf-load-dot{width:8px;height:8px;border-radius:50%;background:var(--c1);animation:vf-pulse .8s ease infinite alternate}
+.vf-load-dot:nth-child(2){animation-delay:.15s}
+.vf-load-dot:nth-child(3){animation-delay:.3s}
+@keyframes vf-pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+@media(max-width:768px){
+  .dash-head,.kpi-strip,.filter-row{padding-left:20px;padding-right:20px}
+  .grid{grid-template-columns:1fr;padding:16px 20px;gap:16px}
+  .cell{min-height:260px}
+  .cell.wide{grid-column:1}
+  .kpi-strip{gap:24px;flex-wrap:wrap}
+  .kpi-item .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="vf-load" id="loader"><div class="vf-load-dots"><div class="vf-load-dot"></div><div class="vf-load-dot"></div><div class="vf-load-dot"></div></div></div>
+
+<div class="dash-head">
+  <div>
+    <h1>{{TITLE}}</h1>
+    <p class="sub">{{SUBTITLE}}</p>
+  </div>
+</div>
+
+<div class="kpi-strip">
+  <div class="kpi-item">
+    <div class="num" style="color:var(--c1)">{{KPI_1}}</div>
+    <div class="unit">{{UNIT_1}}</div>
+    <div class="desc">{{DESC_1}}</div>
+  </div>
+  <div class="kpi-item">
+    <div class="num" style="color:var(--c3)">{{KPI_2}}</div>
+    <div class="unit">{{UNIT_2}}</div>
+    <div class="desc">{{DESC_2}}</div>
+  </div>
+  <div class="kpi-item">
+    <div class="num" style="color:var(--c2)">{{KPI_3}}</div>
+    <div class="unit">{{UNIT_3}}</div>
+    <div class="desc">{{DESC_3}}</div>
+  </div>
+</div>
+
+<div class="filter-row">
+  <button class="filter-tab on">전체</button>
+  <button class="filter-tab">{{F1}}</button>
+  <button class="filter-tab">{{F2}}</button>
+  <button class="filter-tab">{{F3}}</button>
+</div>
+
+<div class="grid">
+  <div class="cell">
+    <div class="cell-title">{{CHART_1}}</div>
+    <div class="cell-body" id="chart1"><!-- ═══ CHART 1 ═══ --></div>
+  </div>
+  <div class="cell">
+    <div class="cell-title">{{CHART_2}}</div>
+    <div class="cell-body" id="chart2"><!-- ═══ CHART 2 ═══ --></div>
+  </div>
+  <div class="cell">
+    <div class="cell-title">{{CHART_3}}</div>
+    <div class="cell-body" id="chart3"><!-- ═══ CHART 3 ═══ --></div>
+  </div>
+  <div class="cell">
+    <div class="cell-title">{{CHART_4}}</div>
+    <div class="cell-body" id="chart4"><!-- ═══ CHART 4 ═══ --></div>
+  </div>
+</div>
+
+<div class="dash-foot">
+  <span>{{SOURCE}}</span>
+  <span>vizforge</span>
+</div>
+
+<button class="theme-btn" id="themeBtn">☀️</button>
+
+<script>
+const t=document.getElementById('themeBtn');let d=false;
+t.addEventListener('click',()=>{d=!d;document.documentElement.setAttribute('data-theme',d?'dark':'light');t.textContent=d?'🌙':'☀️'});
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('hide'),400));
+document.querySelectorAll('.filter-tab').forEach(b=>{
+  b.addEventListener('click',()=>{document.querySelectorAll('.filter-tab').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
+});
+/* ═══ COMBO SCRIPT HERE ═══ */
+</script>
+</body>
+</html>

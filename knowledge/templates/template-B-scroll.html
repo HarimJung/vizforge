@@ -1,0 +1,191 @@
+<!-- ============================================
+     TEMPLATE B — Scroll Storytelling
+     knowledge/templates/template-B-scroll.html
+     
+     레퍼: The Pudding, Reuters Graphics
+     인트로 → sticky 차트 → 스크롤 텍스트
+     ============================================ -->
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- {{CDN_LIBS}} -->
+<style>
+:root {
+  --c1:#009FDA;--c2:#EC008C;--c3:#FF9900;--c4:#81C800;--c5:#FED100;--c6:#1F145D;--gray:#9C9C9C;
+  --c1-60:#66C5E8;--c2-60:#F466B8;--c3-60:#FFB866;--c4-60:#ADD966;--c5-60:#FEDF66;--c6-60:#7F7A9E;
+  --bg:#FAFAFA;--bg-elevated:#FFFFFF;
+  --text-h1:#111111;--text-body:#444444;--text-label:#666666;--text-muted:#AAAAAA;
+  --border:rgba(0,0,0,.06);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);--shadow-md:0 4px 20px rgba(0,0,0,.06);--shadow-lg:0 8px 40px rgba(0,0,0,.08);
+}
+[data-theme="dark"]{
+  --bg:#0B0B1A;--bg-elevated:rgba(255,255,255,.04);
+  --text-h1:#FFFFFF;--text-body:#CCCCDD;--text-label:#88AACC;--text-muted:#556677;
+  --border:rgba(255,255,255,.06);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 20px rgba(0,0,0,.4);--shadow-lg:0 8px 40px rgba(0,0,0,.5);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{
+  font-family:'Noto Sans KR',-apple-system,sans-serif;
+  background:var(--bg);color:var(--text-body);
+  transition:background .5s,color .5s;
+  overflow-x:hidden;
+}
+
+/* ═══ INTRO — 풀스크린, 타이틀만 ═══ */
+.intro{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  justify-content:center;
+  padding:0 max(48px, 10vw);
+  max-width:800px;
+}
+.intro h1{
+  font-size:clamp(32px,5vw,56px);font-weight:700;
+  color:var(--text-h1);line-height:1.15;letter-spacing:-.03em;
+}
+.intro .sub{
+  font-size:clamp(15px,2vw,19px);font-weight:300;
+  color:var(--text-label);line-height:1.6;margin-top:20px;
+  max-width:520px;
+}
+.intro .scroll-cue{
+  margin-top:60px;
+  font-size:11px;color:var(--text-muted);
+  letter-spacing:.1em;text-transform:uppercase;
+  animation:cue-bob 2s ease infinite;
+}
+@keyframes cue-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ═══ SCROLLY ═══ */
+.scrolly{position:relative}
+.graphic{
+  position:sticky;top:0;
+  width:100%;height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  z-index:1;
+}
+.graphic-inner{
+  width:min(90vw,1200px);
+  height:min(80vh,700px);
+  background:var(--bg-elevated);
+  border-radius:16px;
+  box-shadow:var(--shadow-lg);
+  padding:40px;
+  position:relative;
+  overflow:hidden;
+}
+.graphic-inner svg,.graphic-inner canvas{
+  position:absolute;inset:0;width:100%;height:100%;
+}
+
+/* KPI overlay (차트 좌상단) */
+.kpi-float{
+  position:absolute;top:32px;left:40px;z-index:10;
+  display:flex;flex-direction:column;gap:16px;
+}
+.kpi-float-item{}
+.kpi-float-item .num{font-size:32px;font-weight:700;line-height:1}
+.kpi-float-item .desc{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+.steps{position:relative;z-index:2;pointer-events:none}
+.step{
+  min-height:80vh;
+  display:flex;align-items:center;
+  padding:0 max(48px,6vw);
+  pointer-events:auto;
+}
+.step:first-child{min-height:40vh}
+.step-card{
+  max-width:360px;
+  background:var(--bg-elevated);
+  border-radius:12px;
+  box-shadow:var(--shadow-md);
+  padding:28px 32px;
+}
+.step-card h2{
+  font-size:17px;font-weight:700;
+  color:var(--text-h1);margin-bottom:10px;line-height:1.35;
+}
+.step-card p{font-size:14px;color:var(--text-body);line-height:1.75}
+
+/* ═══ PROGRESS ═══ */
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--c1);z-index:500;width:0;transition:width .1s}
+
+/* ═══ FOOTER ═══ */
+.footer{
+  padding:32px max(48px,6vw);
+  display:flex;justify-content:space-between;
+  border-top:1px solid var(--border);
+}
+.footer span{font-size:10px;color:var(--text-muted)}
+
+/* ═══ COMMON ═══ */
+.vf-tip{position:absolute;pointer-events:none;background:var(--bg-elevated);color:var(--text-body);font-size:12px;padding:10px 16px;border-radius:8px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .15s;z-index:200;max-width:260px;line-height:1.5}
+.theme-btn{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--bg-elevated);box-shadow:var(--shadow-md);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:300;transition:box-shadow .2s}
+.theme-btn:hover{box-shadow:var(--shadow-lg)}
+.vf-load{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+.vf-load.hide{opacity:0;pointer-events:none}
+.vf-load-dots{display:flex;gap:6px}
+.vf-load-dot{width:8px;height:8px;border-radius:50%;background:var(--c1);animation:vf-pulse .8s ease infinite alternate}
+.vf-load-dot:nth-child(2){animation-delay:.15s}
+.vf-load-dot:nth-child(3){animation-delay:.3s}
+@keyframes vf-pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+@media(max-width:768px){
+  .intro{padding:0 24px}
+  .graphic-inner{width:95vw;height:70vh;padding:20px;border-radius:12px}
+  .step{padding:0 20px}
+  .step-card{max-width:100%;padding:20px 24px}
+  .kpi-float{top:20px;left:20px}
+  .kpi-float-item .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="vf-load" id="loader"><div class="vf-load-dots"><div class="vf-load-dot"></div><div class="vf-load-dot"></div><div class="vf-load-dot"></div></div></div>
+<div class="progress" id="progress"></div>
+
+<section class="intro">
+  <h1>{{TITLE}}</h1>
+  <p class="sub">{{SUBTITLE}}</p>
+  <p class="scroll-cue">↓ 스크롤하여 탐색</p>
+</section>
+
+<div class="scrolly">
+  <div class="graphic">
+    <div class="graphic-inner" id="graphicWrap">
+      <div class="kpi-float">
+        <!-- {{KPI}} -->
+      </div>
+      <!-- ═══ CHART HERE ═══ -->
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="0"><div class="step-card"><h2>{{S1_TITLE}}</h2><p>{{S1_TEXT}}</p></div></div>
+    <div class="step" data-step="1"><div class="step-card"><h2>{{S2_TITLE}}</h2><p>{{S2_TEXT}}</p></div></div>
+    <div class="step" data-step="2"><div class="step-card"><h2>{{S3_TITLE}}</h2><p>{{S3_TEXT}}</p></div></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <span>{{SOURCE}}</span>
+  <span>vizforge</span>
+</footer>
+
+<button class="theme-btn" id="themeBtn">☀️</button>
+
+<script>
+const t=document.getElementById('themeBtn');let d=false;
+t.addEventListener('click',()=>{d=!d;document.documentElement.setAttribute('data-theme',d?'dark':'light');t.textContent=d?'🌙':'☀️'});
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('hide'),400));
+/* ═══ COMBO SCRIPT HERE ═══ */
+</script>
+</body>
+</html>
