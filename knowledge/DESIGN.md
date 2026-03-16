@@ -1,14 +1,14 @@
+> ⚠️ DEPRECATED — Stage 4에서 이 파일의 CSS 변수를 직접 사용하지 않는다.
+> 색상·폰트·여백의 최종 권한은 knowledge/templates/template-{A~D}.html의 :root이다.
+> 이 파일은 Stage 2에서 무드 키워드 참고용으로만 읽는다.
+
 # Design Presets — 무드별 CSS 변수 시스템
 
 ## 사용법
-Stage 2에서 데이터 도메인에 따라 프리셋이 매칭된다.
-Stage 3 설계 문서에 해당 프리셋의 CSS 변수를 그대로 삽입한다.
-Stage 4-A에서 이 변수들을 :root에 선언한다.
-
-## Google Fonts CDN (공통)
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Mono&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+Stage 2에서 데이터 도메인에 따라 무드 키워드가 매칭된다.
+무드 키워드는 Stage 3 design-doc.md의 컨셉 문단 톤 설정에만 참고한다.
+이 파일의 CSS 변수, 폰트, 색상은 Stage 3~5에서 출력에 사용하지 않는다.
+실제 출력의 색상·폰트·여백은 선택된 템플릿(knowledge/templates/)의 :root가 최종 권한이다.
 
 
 ---

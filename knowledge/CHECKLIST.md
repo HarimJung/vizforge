@@ -9,8 +9,10 @@ Stage 5에서 순서대로 적용한다. 완료 시 각 항목에 [x] 체크.
 
 - [ ] Stage 2 결과에서 nadieh_effects 기법 ID 목록 확인
 - [ ] Stage 2 결과에서 매칭된 COMBO 번호 확인
+- [ ] Stage 2 결과에서 선택된 템플릿 번호 (A/B/C/D) 확인
 - [ ] design-doc.md의 애니메이션 시퀀스 확인
 - [ ] design-doc.md의 적용 이펙트 명세 확인
+- [ ] design-doc.md의 색 배정 테이블 확인
 
 
 ---
@@ -35,7 +37,7 @@ SVG 콤보 (2, 3, 4, 5, 6, 7, 8, 9):
 Three.js 콤보 (1, 10):
 - [ ] NADIEH-THREEJS.md에서 해당 기법 ID의 GLSL/PostProcess 코드 적용
 - [ ] EffectComposer 구성 (RenderPass → 기법별 Pass 순서)
-- [ ] uniform 값을 DESIGN.md 토큰과 일치시킴
+- [ ] uniform 값을 선택된 템플릿의 :root CSS 변수와 일치시킴 (Three.js 3D 환경색은 콤보 파일 값 예외 허용)
 
 확장 기법 필요 시:
 - [ ] NADIEH-EXTENDED.md에서 해당 EX-N만 참조
@@ -98,7 +100,9 @@ Three.js 콤보 (1, 10):
 
 - [ ] 콘솔 로그 제거
 - [ ] 미사용 변수/함수 제거
-- [ ] CSS 변수가 DESIGN.md 토큰과 일치하는지 확인
+- [ ] CSS 변수가 선택된 템플릿의 :root 정의와 일치하는지 확인
+- [ ] 차트 색상이 design-doc.md 색 배정 테이블의 CSS 변수만 사용하는지 확인
+- [ ] 템플릿의 :root 변수를 임의로 추가/삭제/변경하지 않았는지 확인
 - [ ] 주석: 섹션 구분만 (과도한 주석 금지)
 - [ ] 단일 index.html 파일로 통합 확인
 - [ ] CDN만 사용 확인 (npm/빌드 도구 없음)

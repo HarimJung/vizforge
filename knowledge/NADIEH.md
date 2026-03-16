@@ -208,6 +208,11 @@ D3 애니메이션 (합쳐짐 ON/OFF):
 용도: 겹치는 영역에서 색 혼합
 적용 조건: 요소가 시각적으로 겹칠 때
 
+⚠️ mix-blend-mode는 라이트 테마 기본 환경에서 의도치 않은 결과가 발생할 수 있다.
+권장 대안: opacity 조절(0.3~0.5)로 겹침을 표현한다.
+불가피하게 사용 시 부모에 isolation:isolate 필수.
+
+
 CSS 코드:
   .blend-group {
     isolation: isolate;
