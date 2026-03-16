@@ -48,3 +48,31 @@ Stage 2에서 이 파일을 먼저 읽고 조합을 결정한다.
 존재: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 
 미생성 (인덱스만): 11, 12, 13
+
+
+## 콤보 → 기본 템플릿 매핑
+
+| 콤보 | 기본 템플릿 | 이유 |
+|------|-------------|------|
+| COMBO-1 GLOBE | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-2 DASHBOARD | D (Dashboard) | 다중 차트 그리드 |
+| COMBO-3 SCROLL | B (Scroll) | 스크롤 스토리텔링 |
+| COMBO-4 SANKEY | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-5 MAP | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-6 NETWORK | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-7 DECKGL | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-8 TIMELINE | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-9 VORONOI | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-10 GLOBE-SANKEY | B (Scroll) | 스크롤 기반 씬 전환 |
+| COMBO-11 RADIAL | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-12 CHORD | A (Interactive) | 풀블리드 단일 시각화 |
+| COMBO-13 BEESWARM | A (Interactive) | 풀블리드 단일 시각화 |
+
+> Template C (Report/Poster)는 사용자가 "보고서", "포스터", "인포그래픽"을 명시할 때만 수동 선택한다.
+
+## 색상 규칙
+
+- 실제 출력 색상은 선택된 템플릿의 `:root` CSS 변수(`--c1`~`--c6`, `--c1-60`~`--c6-60`, `--c1-30`~`--c6-30`)를 사용한다.
+- 콤보 파일의 HEX 값은 참고용이며, 코드에 직접 사용하지 않는다.
+- 예외: Three.js `scene.background`, 3D 환경 material 등 CSS 변수가 적용 불가능한 경우에만 콤보 파일의 HEX 값을 사용할 수 있다.
+- Stage 3 design-doc.md에서 색상 배정 테이블을 반드시 작성하고, 이 테이블의 CSS 변수만 코드에 사용한다.

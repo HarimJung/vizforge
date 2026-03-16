@@ -1,0 +1,410 @@
+{
+  "meta": {
+    "title": "The Invisible Exhaust",
+    "subtitle": "Where 415 TWh comes from, and where it goes in the age of AI",
+    "source": "IEA Energy and AI (2025), Carbon Brief, Big Tech Sustainability Reports",
+    "year": 2024,
+    "total_twh": 415
+  },
+  "nodes": [
+    {
+      "id": "coal",
+      "name": "Coal",
+      "layer": 0,
+      "category": "fossil"
+    },
+    {
+      "id": "gas",
+      "name": "Natural Gas",
+      "layer": 0,
+      "category": "fossil"
+    },
+    {
+      "id": "nuclear",
+      "name": "Nuclear",
+      "layer": 0,
+      "category": "clean"
+    },
+    {
+      "id": "solar_wind",
+      "name": "Solar & Wind",
+      "layer": 0,
+      "category": "clean"
+    },
+    {
+      "id": "hydro",
+      "name": "Hydro",
+      "layer": 0,
+      "category": "clean"
+    },
+    {
+      "id": "other_re",
+      "name": "Other Renewables",
+      "layer": 0,
+      "category": "clean"
+    },
+    {
+      "id": "us",
+      "name": "United States",
+      "layer": 1
+    },
+    {
+      "id": "china",
+      "name": "China",
+      "layer": 1
+    },
+    {
+      "id": "europe",
+      "name": "Europe",
+      "layer": 1
+    },
+    {
+      "id": "japan",
+      "name": "Japan",
+      "layer": 1
+    },
+    {
+      "id": "row",
+      "name": "Rest of World",
+      "layer": 1
+    },
+    {
+      "id": "ai_train",
+      "name": "AI Training",
+      "layer": 2,
+      "category": "ai"
+    },
+    {
+      "id": "ai_infer",
+      "name": "AI Inference",
+      "layer": 2,
+      "category": "ai"
+    },
+    {
+      "id": "traditional",
+      "name": "Traditional IT",
+      "layer": 2,
+      "category": "it"
+    },
+    {
+      "id": "cooling",
+      "name": "Cooling & Infra",
+      "layer": 2,
+      "category": "infra"
+    },
+    {
+      "id": "co2",
+      "name": "CO₂ Emissions",
+      "layer": 3,
+      "category": "impact"
+    },
+    {
+      "id": "water",
+      "name": "Water Use",
+      "layer": 3,
+      "category": "impact"
+    },
+    {
+      "id": "heat",
+      "name": "Waste Heat",
+      "layer": 3,
+      "category": "impact"
+    }
+  ],
+  "links": [
+    {
+      "source": "coal",
+      "target": "china",
+      "value": 86
+    },
+    {
+      "source": "coal",
+      "target": "us",
+      "value": 26
+    },
+    {
+      "source": "coal",
+      "target": "europe",
+      "value": 13
+    },
+    {
+      "source": "coal",
+      "target": "row",
+      "value": 10
+    },
+    {
+      "source": "gas",
+      "target": "us",
+      "value": 75
+    },
+    {
+      "source": "gas",
+      "target": "europe",
+      "value": 23
+    },
+    {
+      "source": "gas",
+      "target": "japan",
+      "value": 13
+    },
+    {
+      "source": "gas",
+      "target": "china",
+      "value": 8
+    },
+    {
+      "source": "gas",
+      "target": "row",
+      "value": 6
+    },
+    {
+      "source": "nuclear",
+      "target": "us",
+      "value": 29
+    },
+    {
+      "source": "nuclear",
+      "target": "europe",
+      "value": 19
+    },
+    {
+      "source": "nuclear",
+      "target": "china",
+      "value": 8
+    },
+    {
+      "source": "nuclear",
+      "target": "japan",
+      "value": 5
+    },
+    {
+      "source": "nuclear",
+      "target": "row",
+      "value": 3
+    },
+    {
+      "source": "solar_wind",
+      "target": "us",
+      "value": 31
+    },
+    {
+      "source": "solar_wind",
+      "target": "europe",
+      "value": 15
+    },
+    {
+      "source": "solar_wind",
+      "target": "china",
+      "value": 10
+    },
+    {
+      "source": "solar_wind",
+      "target": "row",
+      "value": 4
+    },
+    {
+      "source": "hydro",
+      "target": "china",
+      "value": 8
+    },
+    {
+      "source": "hydro",
+      "target": "europe",
+      "value": 5
+    },
+    {
+      "source": "hydro",
+      "target": "row",
+      "value": 5
+    },
+    {
+      "source": "hydro",
+      "target": "us",
+      "value": 4
+    },
+    {
+      "source": "other_re",
+      "target": "europe",
+      "value": 4
+    },
+    {
+      "source": "other_re",
+      "target": "us",
+      "value": 3
+    },
+    {
+      "source": "other_re",
+      "target": "row",
+      "value": 2
+    },
+    {
+      "source": "us",
+      "target": "ai_train",
+      "value": 20
+    },
+    {
+      "source": "us",
+      "target": "ai_infer",
+      "value": 27
+    },
+    {
+      "source": "us",
+      "target": "traditional",
+      "value": 83
+    },
+    {
+      "source": "us",
+      "target": "cooling",
+      "value": 38
+    },
+    {
+      "source": "china",
+      "target": "ai_train",
+      "value": 11
+    },
+    {
+      "source": "china",
+      "target": "ai_infer",
+      "value": 15
+    },
+    {
+      "source": "china",
+      "target": "traditional",
+      "value": 60
+    },
+    {
+      "source": "china",
+      "target": "cooling",
+      "value": 34
+    },
+    {
+      "source": "europe",
+      "target": "ai_train",
+      "value": 6
+    },
+    {
+      "source": "europe",
+      "target": "ai_infer",
+      "value": 11
+    },
+    {
+      "source": "europe",
+      "target": "traditional",
+      "value": 38
+    },
+    {
+      "source": "europe",
+      "target": "cooling",
+      "value": 24
+    },
+    {
+      "source": "japan",
+      "target": "ai_train",
+      "value": 2
+    },
+    {
+      "source": "japan",
+      "target": "ai_infer",
+      "value": 3
+    },
+    {
+      "source": "japan",
+      "target": "traditional",
+      "value": 9
+    },
+    {
+      "source": "japan",
+      "target": "cooling",
+      "value": 4
+    },
+    {
+      "source": "row",
+      "target": "ai_train",
+      "value": 3
+    },
+    {
+      "source": "row",
+      "target": "ai_infer",
+      "value": 6
+    },
+    {
+      "source": "row",
+      "target": "traditional",
+      "value": 13
+    },
+    {
+      "source": "row",
+      "target": "cooling",
+      "value": 8
+    },
+    {
+      "source": "ai_train",
+      "target": "co2",
+      "value": 26
+    },
+    {
+      "source": "ai_train",
+      "target": "water",
+      "value": 10
+    },
+    {
+      "source": "ai_train",
+      "target": "heat",
+      "value": 6
+    },
+    {
+      "source": "ai_infer",
+      "target": "co2",
+      "value": 36
+    },
+    {
+      "source": "ai_infer",
+      "target": "water",
+      "value": 15
+    },
+    {
+      "source": "ai_infer",
+      "target": "heat",
+      "value": 11
+    },
+    {
+      "source": "traditional",
+      "target": "co2",
+      "value": 114
+    },
+    {
+      "source": "traditional",
+      "target": "water",
+      "value": 49
+    },
+    {
+      "source": "traditional",
+      "target": "heat",
+      "value": 40
+    },
+    {
+      "source": "cooling",
+      "target": "co2",
+      "value": 56
+    },
+    {
+      "source": "cooling",
+      "target": "water",
+      "value": 37
+    },
+    {
+      "source": "cooling",
+      "target": "heat",
+      "value": 15
+    }
+  ],
+  "kpi": {
+    "total_twh": 415,
+    "pct_global": 1.5,
+    "fossil_pct": 63,
+    "ai_pct": 25,
+    "co2_mt": 232,
+    "water_billion_liters": 111,
+    "yoy_growth_pct": 12
+  }
+}

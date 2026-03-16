@@ -1,0 +1,1124 @@
+<!-- ============================================
+     TEMPLATE A — Single Interactive (Full-bleed)
+     Project: The Invisible Exhaust (ai-energy-co2)
+     ============================================ -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Invisible Exhaust — 보이지 않는 배기가스</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js" defer></script>
+<style>
+/* ═══ BRAND TOKENS ═══ */
+:root {
+  --c1:#009FDA; --c2:#EC008C; --c3:#FF9900;
+  --c4:#81C800; --c5:#FED100; --c6:#1F145D;
+  --gray:#9C9C9C;
+  --c1-60:#66C5E8; --c2-60:#F466B8; --c3-60:#FFB866;
+  --c4-60:#ADD966; --c5-60:#FEDF66; --c6-60:#7F7A9E;
+  --c1-30:#B3E2F4;--c2-30:#F9B8DA;--c3-30:#FFDCB3;--c4-30:#D6ECB3;--c5-30:#FFF0B3;--c6-30:#BFBBCE;
+
+
+  --bg: #FAFAFA;
+  --bg-elevated: #FFFFFF;
+  --text-h1: #111111;
+  --text-body: #444444;
+  --text-label: #666666;
+  --text-muted: #AAAAAA;
+  --border: rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.08);
+}
+[data-theme="dark"] {
+  --bg: #0B0B1A;
+  --bg-elevated: rgba(255,255,255,.04);
+  --text-h1: #FFFFFF;
+  --text-body: #CCCCDD;
+  --text-label: #88AACC;
+  --text-muted: #556677;
+  --border: rgba(255,255,255,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+}
+
+/* ═══ RESET ═══ */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
+html { font-size:16px; -webkit-font-smoothing:antialiased }
+body {
+  font-family:'Noto Sans KR', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-body);
+  transition: background .5s ease, color .5s ease;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ═══ TYPOGRAPHY ═══ */
+.t-hero    { font-size:clamp(28px,4vw,42px); font-weight:700; color:var(--text-h1); line-height:1.2; letter-spacing:-.02em }
+.t-sub     { font-size:clamp(14px,1.5vw,17px); font-weight:300; color:var(--text-label); line-height:1.5; margin-top:12px }
+.t-kpi-num { font-size:clamp(28px,3vw,48px); font-weight:700; line-height:1 }
+.t-kpi-unit{ font-size:12px; font-weight:500; color:var(--text-label); margin-top:2px }
+.t-kpi-desc{ font-size:11px; font-weight:400; color:var(--text-muted); margin-top:6px; letter-spacing:.02em }
+.t-label   { font-size:11px; font-weight:500; color:var(--text-label) }
+.t-source  { font-size:10px; font-weight:400; color:var(--text-muted) }
+.t-layer-header { font-size:10px; font-weight:500; fill:var(--text-muted); text-transform:uppercase; letter-spacing:0.15em }
+.t-node    { font-size:11px; font-weight:600; fill:var(--text-h1) }
+.t-value   { font-size:10px; font-weight:400; fill:var(--text-muted) }
+
+/* ═══ PAGE LAYOUT — 여백 중심, UI 최소 ═══ */
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 60px 64px 40px;
+}
+
+/* ─── Title block ─── */
+.title-block {
+  max-width: 600px;
+  margin-bottom: 48px;
+}
+
+/* ─── KPI strip (제목 아래, 가로 나열, border 없음) ─── */
+.kpi-strip {
+  display: flex;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.kpi-item {
+  /* 카드 아님. border 없음. 그냥 텍스트 그룹 */
+}
+
+/* ─── Chart area (메인, 풀 와이드) ─── */
+.chart-area {
+  position: relative;
+  width: 100%;
+  background: var(--bg-elevated);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 40px;
+  margin-bottom: 40px;
+  min-height: 500px;
+}
+.chart-area svg, .chart-area canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ─── Filter bar ─── */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.filter-btn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-label);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.05em;
+}
+.filter-btn:hover {
+  border-color: var(--text-body);
+  color: var(--text-h1);
+}
+.filter-btn.active {
+  background: var(--text-h1);
+  color: var(--bg);
+  border-color: var(--text-h1);
+}
+
+/* ─── Legend (차트 위, 심플) ─── */
+.legend-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.legend-item { display:flex; align-items:center; gap:6px }
+.legend-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0 }
+
+/* ─── Source footer ─── */
+.source-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── Tooltip ─── */
+.vf-tip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg-elevated);
+  color: var(--text-body);
+  font-size: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 200;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+/* ─── Theme toggle (우하단 고정, 작게) ─── */
+.theme-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  transition: box-shadow .2s;
+}
+.theme-btn:hover { box-shadow: var(--shadow-lg) }
+
+/* ─── Loading ─── */
+.vf-load {
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999;transition:opacity .4s;
+}
+.vf-load.hide{opacity:0;pointer-events:none}
+.vf-load-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c1);
+  animation:vf-pulse .8s ease infinite alternate;
+}
+.vf-load-dot:nth-child(2){animation-delay:.15s}
+.vf-load-dot:nth-child(3){animation-delay:.3s}
+@keyframes vf-pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.vf-load-dots{display:flex;gap:6px}
+
+/* ─── Insights section ─── */
+.insights-section {
+  margin-top: 48px;
+  margin-bottom: 40px;
+}
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.insight-card {
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.insight-card svg {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--text-muted);
+}
+.insight-card .t-label { margin-bottom: 6px }
+.insight-card .t-body { font-size: 13px; color: var(--text-body); line-height: 1.5 }
+
+/* ─── Bottom line ─── */
+.bottom-line {
+  margin-top: 48px;
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .page{padding:32px 24px 24px}
+  .kpi-strip{gap:24px;flex-wrap:wrap}
+  .chart-area{padding:20px;border-radius:12px}
+  .title-block{margin-bottom:32px}
+  .filter-bar{flex-wrap:wrap}
+  .insights-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="vf-load" id="loader"><div class="vf-load-dots"><div class="vf-load-dot"></div><div class="vf-load-dot"></div><div class="vf-load-dot"></div></div></div>
+
+<main class="page">
+
+  <div class="title-block">
+    <h1 class="t-hero">The Invisible Exhaust</h1>
+    <p class="t-sub">Where 415 TWh comes from, and where it goes in the age of AI</p>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi-item" data-kpi="twh">
+      <div class="t-kpi-num" style="color:var(--c1)" data-target="415">415</div>
+      <div class="t-kpi-unit">TWh</div>
+      <div class="t-kpi-desc" data-default="Total DC Power">Total DC Power</div>
+    </div>
+    <div class="kpi-item" data-kpi="pct">
+      <div class="t-kpi-num" style="color:var(--c3)" data-target="63">63%</div>
+      <div class="t-kpi-unit">Fossil</div>
+      <div class="t-kpi-desc" data-default="Fossil Share">Fossil Share</div>
+    </div>
+    <div class="kpi-item" data-kpi="co2">
+      <div class="t-kpi-num" style="color:var(--c2)" data-target="232">232</div>
+      <div class="t-kpi-unit">Mt CO₂</div>
+      <div class="t-kpi-desc" data-default="Annual CO₂">Annual CO₂</div>
+    </div>
+  </div>
+
+  <div class="chart-area" id="chartWrap">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="fossil">Fossil</button>
+      <button class="filter-btn" data-filter="clean">Clean</button>
+      <button class="filter-btn" data-filter="ai">AI Workload</button>
+    </div>
+    <div class="legend-row" id="legend"></div>
+    <!-- ═══ SANKEY CHART HERE ═══ -->
+    <div class="vf-tip" id="tooltip"></div>
+  </div>
+
+  <div class="insights-section">
+    <h2 class="t-label" style="margin-bottom:20px;text-transform:uppercase;letter-spacing:0.15em">Key Insights</h2>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <div>
+          <div class="t-label">Equivalent Scale</div>
+          <div class="t-body">415 TWh equals the UK's entire annual electricity consumption</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <div class="t-label">Core Finding</div>
+          <div class="t-body">Fossil fuels are 62% of input but responsible for 89% of CO&#8322; output</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <div>
+          <div class="t-label">Growth Warning</div>
+          <div class="t-body">AI workloads are 25% of usage but growing year-over-year at +35%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-line">
+    <p class="t-sub" style="max-width:640px;text-align:center;margin:0 auto">
+      The electricity consumed by data centers is invisible — but the environmental cost
+      at the end of every kilowatt-hour is not. As AI scales, so does its hidden exhaust.
+    </p>
+  </div>
+
+  <div class="source-bar">
+    <span class="t-source">IEA Energy and AI (2025), Carbon Brief (2024), Google/Microsoft/Amazon Sustainability Reports (2024)</span>
+    <span class="t-source">vizforge</span>
+  </div>
+
+</main>
+
+<button class="theme-btn" id="themeBtn">☀️</button>
+
+<script>
+/* ── Theme toggle ── */
+const themeBtn=document.getElementById('themeBtn');let isDark=false;
+themeBtn.addEventListener('click',()=>{isDark=!isDark;document.documentElement.setAttribute('data-theme',isDark?'dark':'light');themeBtn.textContent=isDark?'🌙':'☀️';if(typeof updateColors==='function')updateColors()});
+
+document.addEventListener('DOMContentLoaded', () => {
+/* ═══ COMBO-4 SANKEY — Stage 5 Polish ═══ */
+
+const root = document.documentElement;
+const cv = v => getComputedStyle(root).getPropertyValue(v).trim();
+const chartWrap = document.getElementById('chartWrap');
+const tooltip = document.getElementById('tooltip');
+
+/* ── Color assignment table (design-doc.md §4) ── */
+const COLOR_VAR = {
+  coal:'--c3', gas:'--c3-60', nuclear:'--c6', solar_wind:'--c4',
+  hydro:'--c1', other_re:'--c4-60',
+  us:'--c5-30', china:'--c5-60', europe:'--c1-30', japan:'--c6-30', row:'--gray',
+  ai_train:'--c2', ai_infer:'--c2-60', traditional:'--c5', cooling:'--c6-60',
+  co2:'--c3', water:'--c1', heat:'--c2'
+};
+const nodeColor = id => cv(COLOR_VAR[id] || '--gray');
+
+/* ── Number formatting helper ── */
+function fmt(val, unit) {
+  const v = Math.round(val);
+  const comma = v >= 1000 ? v.toLocaleString('en-US') : String(v);
+  switch (unit) {
+    case 'twh': return `${comma} TWh`;
+    case 'co2': return `${comma} Mt CO\u2082`;
+    case 'water': return `${comma} B liters`;
+    case 'pct': return `${v}%`;
+    default: return comma;
+  }
+}
+
+/* ── Full data (18 nodes, 57 links, 415 TWh) ── */
+const DATA = {
+  nodes: [
+    {id:'coal',name:'Coal',layer:0,category:'fossil'},
+    {id:'gas',name:'Natural Gas',layer:0,category:'fossil'},
+    {id:'nuclear',name:'Nuclear',layer:0,category:'clean'},
+    {id:'solar_wind',name:'Solar & Wind',layer:0,category:'clean'},
+    {id:'hydro',name:'Hydro',layer:0,category:'clean'},
+    {id:'other_re',name:'Other Renewables',layer:0,category:'clean'},
+    {id:'us',name:'United States',layer:1},
+    {id:'china',name:'China',layer:1},
+    {id:'europe',name:'Europe',layer:1},
+    {id:'japan',name:'Japan',layer:1},
+    {id:'row',name:'Rest of World',layer:1},
+    {id:'ai_train',name:'AI Training',layer:2,category:'ai'},
+    {id:'ai_infer',name:'AI Inference',layer:2,category:'ai'},
+    {id:'traditional',name:'Traditional IT',layer:2,category:'it'},
+    {id:'cooling',name:'Cooling & Infra',layer:2,category:'infra'},
+    {id:'co2',name:'CO\u2082 Emissions',layer:3,category:'impact'},
+    {id:'water',name:'Water Use',layer:3,category:'impact'},
+    {id:'heat',name:'Waste Heat',layer:3,category:'impact'}
+  ],
+  links: [
+    {source:'coal',target:'china',value:86},{source:'coal',target:'us',value:26},
+    {source:'coal',target:'europe',value:13},{source:'coal',target:'row',value:10},
+    {source:'gas',target:'us',value:75},{source:'gas',target:'europe',value:23},
+    {source:'gas',target:'japan',value:13},{source:'gas',target:'china',value:8},
+    {source:'gas',target:'row',value:6},
+    {source:'nuclear',target:'us',value:29},{source:'nuclear',target:'europe',value:19},
+    {source:'nuclear',target:'china',value:8},{source:'nuclear',target:'japan',value:5},
+    {source:'nuclear',target:'row',value:3},
+    {source:'solar_wind',target:'us',value:31},{source:'solar_wind',target:'europe',value:15},
+    {source:'solar_wind',target:'china',value:10},{source:'solar_wind',target:'row',value:4},
+    {source:'hydro',target:'china',value:8},{source:'hydro',target:'europe',value:5},
+    {source:'hydro',target:'row',value:5},{source:'hydro',target:'us',value:4},
+    {source:'other_re',target:'europe',value:4},{source:'other_re',target:'us',value:3},
+    {source:'other_re',target:'row',value:2},
+    {source:'us',target:'ai_train',value:20},{source:'us',target:'ai_infer',value:27},
+    {source:'us',target:'traditional',value:83},{source:'us',target:'cooling',value:38},
+    {source:'china',target:'ai_train',value:11},{source:'china',target:'ai_infer',value:15},
+    {source:'china',target:'traditional',value:60},{source:'china',target:'cooling',value:34},
+    {source:'europe',target:'ai_train',value:6},{source:'europe',target:'ai_infer',value:11},
+    {source:'europe',target:'traditional',value:38},{source:'europe',target:'cooling',value:24},
+    {source:'japan',target:'ai_train',value:2},{source:'japan',target:'ai_infer',value:3},
+    {source:'japan',target:'traditional',value:9},{source:'japan',target:'cooling',value:4},
+    {source:'row',target:'ai_train',value:3},{source:'row',target:'ai_infer',value:6},
+    {source:'row',target:'traditional',value:13},{source:'row',target:'cooling',value:8},
+    {source:'ai_train',target:'co2',value:26},{source:'ai_train',target:'water',value:10},
+    {source:'ai_train',target:'heat',value:6},
+    {source:'ai_infer',target:'co2',value:36},{source:'ai_infer',target:'water',value:15},
+    {source:'ai_infer',target:'heat',value:11},
+    {source:'traditional',target:'co2',value:114},{source:'traditional',target:'water',value:49},
+    {source:'traditional',target:'heat',value:40},
+    {source:'cooling',target:'co2',value:56},{source:'cooling',target:'water',value:37},
+    {source:'cooling',target:'heat',value:15}
+  ]
+};
+
+const LAYER_LABELS = ['Energy Source','Region','DC Usage','Impact'];
+const FILTER_PRESETS = {
+  all: null,
+  fossil: ['coal','gas'],
+  clean: ['nuclear','solar_wind','hydro','other_re'],
+  ai: ['ai_train','ai_infer']
+};
+const KPI_TARGETS = [415, 63, 232];
+const KPI_SUFFIX = ['', '%', ''];
+
+/* ── SVG setup ── */
+const W = 1200, H = 700;
+const margin = {top:50, right:160, bottom:20, left:160};
+
+const svg = d3.select('#chartWrap')
+  .insert('svg', '.vf-tip')
+  .attr('viewBox', `0 0 ${W} ${H}`)
+  .attr('preserveAspectRatio', 'xMidYMid meet');
+
+const defs = svg.append('defs');
+
+/* ── F1: Glow filter (base stdDev 4, hover 6) ── */
+const glowF = defs.append('filter')
+  .attr('id','glow').attr('width','300%').attr('height','300%')
+  .attr('x','-100%').attr('y','-100%');
+glowF.append('feGaussianBlur')
+  .attr('class','glow-blur')
+  .attr('in','SourceGraphic').attr('stdDeviation',4).attr('result','blur');
+const gm = glowF.append('feMerge');
+gm.append('feMergeNode').attr('in','blur');
+gm.append('feMergeNode').attr('in','SourceGraphic');
+
+const glowHover = defs.append('filter')
+  .attr('id','glow-hover').attr('width','300%').attr('height','300%')
+  .attr('x','-100%').attr('y','-100%');
+glowHover.append('feGaussianBlur')
+  .attr('in','SourceGraphic').attr('stdDeviation',6).attr('result','blur');
+const gm2 = glowHover.append('feMerge');
+gm2.append('feMergeNode').attr('in','blur');
+gm2.append('feMergeNode').attr('in','SourceGraphic');
+
+/* ── Sankey layout ── */
+const sankey = d3.sankey()
+  .nodeId(d => d.id)
+  .nodeWidth(20)
+  .nodePadding(16)
+  .nodeAlign(d3.sankeyJustify)
+  .extent([[margin.left,margin.top],[W-margin.right,H-margin.bottom]]);
+
+const graph = sankey({
+  nodes: DATA.nodes.map(d => ({...d})),
+  links: DATA.links.map(d => ({...d}))
+});
+
+/* ── G3: Orientation gradients ── */
+function updateGradients() {
+  defs.selectAll('.link-grad').remove();
+  graph.links.forEach((link, i) => {
+    const grad = defs.append('linearGradient')
+      .attr('class','link-grad')
+      .attr('id',`lg-${i}`)
+      .attr('gradientUnits','userSpaceOnUse')
+      .attr('x1', link.source.x1)
+      .attr('x2', link.target.x0);
+    grad.append('stop').attr('offset','0%')
+      .attr('stop-color', nodeColor(link.source.id));
+    grad.append('stop').attr('offset','100%')
+      .attr('stop-color', nodeColor(link.target.id));
+  });
+}
+updateGradients();
+
+/* ── Draw links ── */
+const linkPaths = svg.append('g').attr('class','links')
+  .selectAll('path')
+  .data(graph.links)
+  .join('path')
+  .attr('d', d3.sankeyLinkHorizontal())
+  .attr('fill','none')
+  .attr('stroke', (d,i) => `url(#lg-${i})`)
+  .attr('stroke-opacity', 0.30)
+  .attr('stroke-width', d => Math.max(1, d.width))
+  .style('cursor','pointer');
+
+/* ── Particle dots (flowing along link paths) ── */
+const particleG = svg.append('g').attr('class','particles').attr('pointer-events','none');
+const allParticles = [];
+const maxLinkLen = d3.max(linkPaths.nodes(), p => p.getTotalLength()) || 1;
+linkPaths.each(function(d, i) {
+  const path = this;
+  const len = path.getTotalLength();
+  const nDots = d.width > 20 ? 5 : d.width > 8 ? 4 : 3;
+  const dur = 2000 + (len / maxLinkLen) * 2000;
+  const pColor = nodeColor(d.source.id);
+  for (let j = 0; j < nDots; j++) {
+    const c = particleG.append('circle')
+      .attr('r', 2).attr('fill', pColor).attr('opacity', 0);
+    allParticles.push({ el: c.node(), path, len, dur, progress: j / nDots, linkIdx: i });
+  }
+});
+
+/* ── Draw nodes ── */
+const nodeRects = svg.append('g').attr('class','nodes')
+  .selectAll('rect')
+  .data(graph.nodes)
+  .join('rect')
+  .attr('x', d => d.x0)
+  .attr('y', d => d.y0)
+  .attr('width', d => d.x1 - d.x0)
+  .attr('height', d => Math.max(1, d.y1 - d.y0))
+  .attr('fill', d => nodeColor(d.id))
+  .attr('rx', 3)
+  .style('cursor','pointer');
+
+/* ── Layer column headers ── */
+const layerXs = [0,1,2,3].map(l => {
+  const ns = graph.nodes.filter(n => n.layer === l);
+  return (d3.min(ns, n=>n.x0) + d3.max(ns, n=>n.x1)) / 2;
+});
+const layerHeaders = svg.append('g').attr('class','layer-headers')
+  .selectAll('text')
+  .data(LAYER_LABELS)
+  .join('text')
+  .attr('x', (d,i) => layerXs[i])
+  .attr('y', 18)
+  .attr('text-anchor','middle')
+  .attr('class','t-layer-header')
+  .attr('fill','currentColor')
+  .text(d => d);
+
+/* ── G1: Layer gradient bars ── */
+[0,1,2,3].forEach(l => {
+  const ns = graph.nodes.filter(n => n.layer === l);
+  const colors = ns.map(n => nodeColor(n.id));
+  const gradId = `lb-${l}`;
+  const grad = defs.append('linearGradient').attr('id',gradId);
+  colors.forEach((c, i) => {
+    grad.append('stop')
+      .attr('offset', `${(i/(Math.max(1,colors.length-1)))*100}%`)
+      .attr('stop-color', c);
+  });
+  svg.select('.layer-headers')
+    .append('rect')
+    .attr('class','layer-bar')
+    .attr('x', layerXs[l] - 30)
+    .attr('y', 26)
+    .attr('width', 60)
+    .attr('height', 2)
+    .attr('rx', 1)
+    .attr('fill', `url(#${gradId})`)
+    .attr('opacity', 0);
+});
+
+/* ── Layer subtotals ── */
+const layerSubtotals = [
+  () => {
+    const fossil = graph.nodes.filter(n => n.category === 'fossil').reduce((s,n) => s + n.value, 0);
+    const clean = graph.nodes.filter(n => n.category === 'clean').reduce((s,n) => s + n.value, 0);
+    return `Fossil: ${fmt(fossil,'twh')} / Clean: ${fmt(clean,'twh')}`;
+  },
+  () => {
+    const total = graph.nodes.filter(n => n.layer === 1).reduce((s,n) => s + n.value, 0);
+    return `Total: ${fmt(total,'twh')}`;
+  },
+  () => {
+    const ai = graph.nodes.filter(n => n.category === 'ai').reduce((s,n) => s + n.value, 0);
+    const trad = graph.nodes.filter(n => n.id === 'traditional').reduce((s,n) => s + n.value, 0);
+    const cool = graph.nodes.filter(n => n.id === 'cooling').reduce((s,n) => s + n.value, 0);
+    return `AI: ${fmt(ai,'twh')} / Trad: ${fmt(trad,'twh')} / Cool: ${fmt(cool,'twh')}`;
+  },
+  () => {
+    const co2 = graph.nodes.find(n => n.id === 'co2').value;
+    const water = graph.nodes.find(n => n.id === 'water').value;
+    const heat = graph.nodes.find(n => n.id === 'heat').value;
+    return `CO\u2082: ${fmt(co2,'co2')} / Water: ${fmt(water,'water')} / Heat: ${fmt(heat,'twh')}`;
+  }
+];
+const subtotalTexts = svg.select('.layer-headers').selectAll('.subtotal')
+  .data([0,1,2,3]).join('text')
+  .attr('class','subtotal')
+  .attr('x', (d,i) => layerXs[i])
+  .attr('y', 38)
+  .attr('text-anchor','middle')
+  .attr('font-size','9px')
+  .attr('fill','var(--text-muted)')
+  .attr('opacity', 0)
+  .text((d,i) => layerSubtotals[i]());
+
+/* ── Labels ── */
+const labelsG = svg.append('g').attr('class','labels');
+const lx = d => d.layer === 0 ? d.x0 - 8 : d.x1 + 8;
+const la = d => d.layer === 0 ? 'end' : 'start';
+
+const nodeLabels = labelsG.selectAll('.nd')
+  .data(graph.nodes).join('text')
+  .attr('class','t-node')
+  .attr('x', lx)
+  .attr('y', d => (d.y0+d.y1)/2 - 6)
+  .attr('dy','0.35em')
+  .attr('text-anchor', la)
+  .text(d => d.name);
+
+const valueLabels = labelsG.selectAll('.nv')
+  .data(graph.nodes).join('text')
+  .attr('class','t-value')
+  .attr('x', lx)
+  .attr('y', d => (d.y0+d.y1)/2 + 8)
+  .attr('dy','0.35em')
+  .attr('text-anchor', la)
+  .text(d => {
+    if ((d.y1-d.y0) <= 18) return '';
+    if (d.id === 'co2') return fmt(d.value, 'co2');
+    if (d.id === 'water') return fmt(d.value, 'water');
+    return fmt(d.value, 'twh');
+  });
+
+/* ── Legend ── */
+const legendItems = [
+  {label:'Fossil',var:'--c3'},{label:'Clean',var:'--c4'},
+  {label:'AI',var:'--c2'},{label:'Traditional',var:'--c5'},
+  {label:'Cooling',var:'--c6-60'},{label:'Impact',var:'--c2'}
+];
+const legendEl = document.getElementById('legend');
+legendItems.forEach(it => {
+  const div = document.createElement('div');
+  div.className = 'legend-item';
+  div.innerHTML = `<div class="legend-dot" style="background:var(${it.var})"></div><span class="t-label">${it.label}</span>`;
+  legendEl.appendChild(div);
+});
+
+/* ═══ EX-8: PROGRESSIVE DISCLOSURE — GSAP Master Timeline ═══ */
+
+/* Set initial hidden states */
+gsap.set('.title-block', { autoAlpha:0, y:-20 });
+gsap.set('.kpi-item', { autoAlpha:0, y:10 });
+gsap.set('.filter-btn', { autoAlpha:0, y:10 });
+gsap.set('.legend-item', { autoAlpha:0 });
+gsap.set('.source-bar', { autoAlpha:0 });
+gsap.set(layerHeaders.nodes(), { opacity:0 });
+gsap.set('.layer-bar', { opacity:0 });
+nodeRects.each(function(d) {
+  gsap.set(this, { scale:0, svgOrigin:`${(d.x0+d.x1)/2} ${(d.y0+d.y1)/2}` });
+});
+linkPaths.each(function() {
+  const len = this.getTotalLength();
+  gsap.set(this, { attr:{'stroke-dasharray':len, 'stroke-dashoffset':len} });
+});
+gsap.set(nodeLabels.nodes(), { opacity:0 });
+gsap.set(valueLabels.nodes(), { opacity:0 });
+
+/* KPI countup helper */
+const kpiEls = document.querySelectorAll('.t-kpi-num');
+kpiEls.forEach(el => { el.dataset.final = el.textContent; el.textContent = '0'; });
+
+/* Build master timeline */
+const masterTL = gsap.timeline({ paused:true });
+
+/* Phase 0: Loader out */
+masterTL.to('#loader', { autoAlpha:0, duration:0.4, ease:'power1.out' })
+
+/* Phase 1: Title + subtitle */
+.to('.title-block', { autoAlpha:1, y:0, duration:0.6, ease:'power2.out' }, 0.3)
+
+/* Phase 2: KPI countup */
+.to('.kpi-item', { autoAlpha:1, y:0, duration:0.4, stagger:0.1, ease:'power2.out' }, 0.7)
+.add(() => {
+  kpiEls.forEach((el, i) => {
+    const obj = { val:0 };
+    const unit = ['twh','pct','co2'][i];
+    gsap.to(obj, {
+      val: KPI_TARGETS[i], duration:0.8, ease:'power2.out',
+      onUpdate: () => { el.textContent = fmt(obj.val, unit); }
+    });
+  });
+}, 0.9)
+
+/* Phase 3: Filter buttons + legend */
+.to('.filter-btn', { autoAlpha:1, y:0, duration:0.3, stagger:0.05, ease:'power2.out' }, 1.2)
+.to('.legend-item', { autoAlpha:1, duration:0.3, stagger:0.05, ease:'power1.out' }, 1.3)
+
+/* Phase 4: Layer headers + G1 bars */
+.to(layerHeaders.nodes(), { opacity:1, duration:0.3, stagger:0.08, ease:'power1.out' }, 1.5)
+.to('.layer-bar', { opacity:0.6, duration:0.4, stagger:0.08, ease:'power1.out' }, 1.6)
+.to(subtotalTexts.nodes(), { opacity:1, duration:0.3, stagger:0.08, ease:'power1.out' }, 1.7)
+
+/* Phase 5: Nodes scale-in (L0→L3) */
+.to(nodeRects.nodes(), { scale:1, duration:0.5, stagger:0.06, ease:'back.out(1.2)' }, 1.8)
+
+/* Phase 6: F5 — Links dash-offset draw-in */
+.to(linkPaths.nodes(), {
+  attr:{'stroke-dashoffset':0},
+  duration:1.2, stagger:0.02, ease:'power2.out',
+  onComplete: () => {
+    linkPaths.attr('stroke-dasharray',null).attr('stroke-dashoffset',null);
+  }
+}, 2.5)
+
+/* Phase 7: Labels + values fade-in */
+.to(nodeLabels.nodes(), { opacity:1, duration:0.3, stagger:0.03, ease:'power1.out' }, 3.5)
+.to(valueLabels.nodes(), { opacity:1, duration:0.3, stagger:0.03, ease:'power1.out' }, 3.7)
+
+/* Phase 8: Source bar + insights + bottom-line */
+.to('.source-bar', { autoAlpha:1, duration:0.4, ease:'power1.out' }, 4.2)
+.to('.insights-section', { autoAlpha:1, y:0, duration:0.5, ease:'power2.out' }, 4.3)
+.to('.bottom-line', { autoAlpha:1, y:0, duration:0.5, ease:'power2.out' }, 4.5);
+
+/* Set initial hidden for new sections */
+gsap.set('.insights-section', { autoAlpha:0, y:20 });
+gsap.set('.bottom-line', { autoAlpha:0, y:20 });
+
+/* Play on load */
+window.addEventListener('load', () => masterTL.play());
+setTimeout(() => { if (masterTL.paused()) masterTL.play(); }, 3000);
+
+/* ── Particle animation (flowing dots along link paths) ── */
+const LINK_BASE_OP = 0.30;
+let particleActive = false;
+let particleRAF = null;
+let lastPTime = 0;
+function startParticles() {
+  if (particleActive) return;
+  particleActive = true;
+  lastPTime = performance.now();
+  allParticles.forEach(p => { gsap.to(p.el, { opacity:0.6, duration:0.5, delay:Math.random()*0.3 }); });
+  function tick(now) {
+    if (!particleActive) return;
+    const dt = now - lastPTime;
+    lastPTime = now;
+    for (let i = 0; i < allParticles.length; i++) {
+      const p = allParticles[i];
+      p.progress += dt / p.dur;
+      if (p.progress >= 1) p.progress -= Math.floor(p.progress);
+      const pt = p.path.getPointAtLength(p.progress * p.len);
+      p.el.setAttribute('cx', pt.x);
+      p.el.setAttribute('cy', pt.y);
+    }
+    particleRAF = requestAnimationFrame(tick);
+  }
+  particleRAF = requestAnimationFrame(tick);
+}
+function stopParticles() {
+  particleActive = false;
+  if (particleRAF) { cancelAnimationFrame(particleRAF); particleRAF = null; }
+}
+/* Start particles after intro completes */
+masterTL.eventCallback('onComplete', startParticles);
+
+/* ═══ INTERACTIONS ═══ */
+
+let activeFilter = 'all';
+let clickedNode = null;
+
+/* ── Path tracing (BFS upstream + downstream) ── */
+function traceFromNodes(startIds, direction) {
+  const connNodes = new Set(startIds);
+  const connLinks = new Set();
+
+  if (direction === 'downstream' || direction === 'both') {
+    const queue = [...startIds];
+    while (queue.length) {
+      const cur = queue.shift();
+      graph.links.forEach((link, i) => {
+        if (link.source.id === cur && !connLinks.has(i)) {
+          connLinks.add(i);
+          if (!connNodes.has(link.target.id)) {
+            connNodes.add(link.target.id);
+            queue.push(link.target.id);
+          }
+        }
+      });
+    }
+  }
+
+  if (direction === 'upstream' || direction === 'both') {
+    const queue = [...startIds];
+    while (queue.length) {
+      const cur = queue.shift();
+      graph.links.forEach((link, i) => {
+        if (link.target.id === cur && !connLinks.has(i)) {
+          connLinks.add(i);
+          if (!connNodes.has(link.source.id)) {
+            connNodes.add(link.source.id);
+            queue.push(link.source.id);
+          }
+        }
+      });
+    }
+  }
+
+  return { nodes: connNodes, links: connLinks };
+}
+
+/* ── Highlight / Dim with GSAP (includes flow overlay) ── */
+function applyHighlight(conn, dur) {
+  linkPaths.each(function(d, i) {
+    const hi = conn.links.has(i);
+    this.__highlighted = hi;
+    gsap.to(this, {
+      attr:{'stroke-opacity': hi ? 0.8 : 0.04},
+      duration:dur, ease:'power2.inOut'
+    });
+  });
+  nodeRects.each(function(d) {
+    gsap.to(this, {
+      opacity: conn.nodes.has(d.id) ? 1 : 0.25,
+      duration:dur, ease:'power2.inOut'
+    });
+  });
+  nodeLabels.each(function(d) {
+    gsap.to(this, {
+      opacity: conn.nodes.has(d.id) ? 1 : 0.15,
+      duration:dur, ease:'power2.inOut'
+    });
+  });
+  valueLabels.each(function(d) {
+    gsap.to(this, {
+      opacity: conn.nodes.has(d.id) ? 1 : 0.15,
+      duration:dur, ease:'power2.inOut'
+    });
+  });
+  /* Particle visibility */
+  allParticles.forEach(p => {
+    p.el.setAttribute('opacity', conn.links.has(p.linkIdx) ? 0.6 : 0);
+  });
+}
+
+function resetHighlight(dur) {
+  linkPaths.each(function() {
+    this.__highlighted = false;
+    gsap.to(this, { attr:{'stroke-opacity': LINK_BASE_OP}, duration:dur, ease:'power2.inOut' });
+  });
+  nodeRects.each(function() {
+    gsap.to(this, { opacity:1, duration:dur, ease:'power2.inOut' });
+  });
+  nodeLabels.each(function() {
+    gsap.to(this, { opacity:1, duration:dur, ease:'power2.inOut' });
+  });
+  valueLabels.each(function() {
+    gsap.to(this, { opacity:1, duration:dur, ease:'power2.inOut' });
+  });
+  /* Restore all particles */
+  allParticles.forEach(p => { p.el.setAttribute('opacity', 0.6); });
+}
+
+/* ── KPI dynamic update ── */
+const KPI_DEFAULTS = { twh: 415, pct: 63, co2: 232 };
+const KPI_DEFAULT_LABELS = ['Total DC Power', 'Fossil Share', 'Annual CO\u2082'];
+const fossilSourceIds = new Set(['coal','gas']);
+
+function computePathKPI(connNodes, connLinks) {
+  /* TWh: value of the connected links flowing into non-impact layer nodes */
+  const connLinksArr = [...connLinks].map(i => graph.links[i]);
+  /* Sum unique link values (avoiding double-count) */
+  const twh = connLinksArr
+    .filter(l => l.target.layer === 3)
+    .reduce((s,l) => s + l.value, 0) ||
+    connLinksArr
+    .filter(l => l.source.layer === 0)
+    .reduce((s,l) => s + l.value, 0) || 0;
+
+  /* Fossil %: ratio of fossil-source links in layer 0→1 */
+  const l0links = connLinksArr.filter(l => l.source.layer === 0);
+  const fossilTwh = l0links.filter(l => fossilSourceIds.has(l.source.id)).reduce((s,l) => s + l.value, 0);
+  const totalInput = l0links.reduce((s,l) => s + l.value, 0);
+  const pct = totalInput > 0 ? Math.round(fossilTwh / totalInput * 100) : 0;
+
+  /* CO₂: sum of link values targeting co2 node */
+  const co2 = connLinksArr.filter(l => l.target.id === 'co2').reduce((s,l) => s + l.value, 0);
+
+  return { twh: Math.round(twh || totalInput), pct, co2: Math.round(co2) };
+}
+
+/* ── Filtered node value computation ── */
+function computeFilteredNodeValues(connLinks) {
+  const vals = {};
+  const arr = [...connLinks].map(i => graph.links[i]);
+  graph.nodes.forEach(n => {
+    const out = arr.filter(l => l.source.id === n.id);
+    const inp = arr.filter(l => l.target.id === n.id);
+    if (out.length > 0) vals[n.id] = out.reduce((s,l) => s + l.value, 0);
+    else if (inp.length > 0) vals[n.id] = inp.reduce((s,l) => s + l.value, 0);
+  });
+  return vals;
+}
+function updateNodeLabels(filteredVals, connNodes) {
+  valueLabels.each(function(d) {
+    if ((d.y1-d.y0) <= 18) return;
+    if (connNodes.has(d.id) && filteredVals[d.id] !== undefined) {
+      const unit = d.id === 'co2' ? 'co2' : d.id === 'water' ? 'water' : 'twh';
+      d3.select(this).text(fmt(filteredVals[d.id], unit));
+    }
+  });
+}
+function resetNodeLabels() {
+  valueLabels.each(function(d) {
+    if ((d.y1-d.y0) <= 18) return;
+    const unit = d.id === 'co2' ? 'co2' : d.id === 'water' ? 'water' : 'twh';
+    d3.select(this).text(fmt(d.value, unit));
+  });
+}
+
+function updateKPI(values, label) {
+  const items = document.querySelectorAll('.kpi-item');
+  const keys = ['twh','pct','co2'];
+  const units = ['twh','pct','co2'];
+  items.forEach((item, i) => {
+    const numEl = item.querySelector('.t-kpi-num');
+    const descEl = item.querySelector('.t-kpi-desc');
+    const current = parseFloat(numEl.textContent.replace(/[^0-9.]/g,'')) || 0;
+    const target = values[keys[i]];
+    const obj = { val: current };
+    gsap.to(obj, {
+      val: target, duration: 0.6, ease: 'power2.out',
+      onUpdate: () => { numEl.textContent = fmt(obj.val, units[i]); }
+    });
+    if (label) descEl.textContent = label;
+    else descEl.textContent = descEl.dataset.default;
+  });
+}
+
+function resetKPI() {
+  updateKPI(KPI_DEFAULTS, null);
+}
+
+/* ── Tooltip helpers ── */
+function showTip(event, html) {
+  const rect = chartWrap.getBoundingClientRect();
+  tooltip.innerHTML = html;
+  tooltip.style.opacity = '1';
+  positionTip(event, rect);
+}
+function positionTip(event, rect) {
+  rect = rect || chartWrap.getBoundingClientRect();
+  let x = event.clientX - rect.left + 16;
+  let y = event.clientY - rect.top - 16;
+  if (x + 260 > rect.width) x = event.clientX - rect.left - 270;
+  if (y < 0) y = event.clientY - rect.top + 24;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+function hideTip() { tooltip.style.opacity = '0'; }
+
+/* ── Node hover ── */
+nodeRects
+  .on('mouseenter', function(event, d) {
+    if (clickedNode || activeFilter !== 'all') return;
+    const conn = traceFromNodes([d.id], 'both');
+    applyHighlight(conn, 0.3);
+    d3.select(this).style('filter','url(#glow-hover)');
+    const pct = (d.value / 415 * 100).toFixed(1);
+    const unit = d.id === 'co2' ? 'co2' : d.id === 'water' ? 'water' : 'twh';
+    showTip(event, `<strong>${d.name}</strong><br>${fmt(d.value, unit)} (${pct}%)`);
+  })
+  .on('mousemove', (event) => positionTip(event))
+  .on('mouseleave', function() {
+    if (clickedNode || activeFilter !== 'all') return;
+    resetHighlight(0.3);
+    d3.select(this).style('filter',null);
+    hideTip();
+  });
+
+/* ── Link hover ── */
+linkPaths
+  .on('mouseenter', function(event, d) {
+    if (clickedNode || activeFilter !== 'all') return;
+    const origW = Math.max(1, d.width);
+    d3.select(this).attr('stroke-opacity',0.9).attr('stroke-width', origW + 2);
+    showTip(event, `<strong>${d.source.name} \u2192 ${d.target.name}</strong><br>${fmt(d.value, 'twh')}`);
+  })
+  .on('mousemove', (event) => positionTip(event))
+  .on('mouseleave', function(event, d) {
+    if (clickedNode || activeFilter !== 'all') return;
+    d3.select(this).attr('stroke-opacity', LINK_BASE_OP).attr('stroke-width', Math.max(1, d.width));
+    hideTip();
+  });
+
+/* ── Node click — path highlight ── */
+nodeRects.on('click', function(event, d) {
+  event.stopPropagation();
+
+  if (activeFilter !== 'all') {
+    activeFilter = 'all';
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = '';
+      b.style.color = '';
+      b.style.boxShadow = '';
+    });
+    document.querySelector('[data-filter="all"]').classList.add('active');
+  }
+
+  if (clickedNode === d.id) {
+    clickedNode = null;
+    resetHighlight(0.4);
+    nodeRects.style('filter', null);
+    resetKPI();
+    resetNodeLabels();
+  } else {
+    clickedNode = d.id;
+    const conn = traceFromNodes([d.id], 'both');
+    applyHighlight(conn, 0.4);
+    nodeRects.style('filter', nd => conn.nodes.has(nd.id) ? 'url(#glow)' : null);
+    const kpi = computePathKPI(conn.nodes, conn.links);
+    updateKPI(kpi, `${d.name} Path`);
+    const fv = computeFilteredNodeValues(conn.links);
+    updateNodeLabels(fv, conn.nodes);
+  }
+  hideTip();
+});
+
+/* ── Background click to reset ── */
+svg.on('click', function() {
+  if (clickedNode) {
+    clickedNode = null;
+    resetHighlight(0.4);
+    nodeRects.style('filter', null);
+    resetKPI();
+    resetNodeLabels();
+  }
+});
+
+/* ── Filter preset buttons ── */
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filter = btn.dataset.filter;
+    clickedNode = null;
+    nodeRects.style('filter', null);
+
+    const FILTER_COLORS = {
+      fossil: { bg:'var(--c3)', shadow:'var(--c3-30)' },
+      clean:  { bg:'var(--c4)', shadow:'var(--c4-30)' },
+      ai:     { bg:'var(--c2)', shadow:'var(--c2-30)' }
+    };
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = '';
+      b.style.color = '';
+      b.style.boxShadow = '';
+      b.style.borderColor = '';
+    });
+    btn.classList.add('active');
+    const fc = FILTER_COLORS[filter];
+    if (fc) {
+      btn.style.background = fc.bg;
+      btn.style.color = '#fff';
+      btn.style.boxShadow = `0 0 12px ${fc.shadow}`;
+      btn.style.borderColor = fc.bg;
+    }
+    activeFilter = filter;
+
+    if (filter === 'all') {
+      resetHighlight(0.6);
+      resetKPI();
+      resetNodeLabels();
+    } else {
+      const startIds = FILTER_PRESETS[filter];
+      const direction = filter === 'ai' ? 'both' : 'downstream';
+      const conn = traceFromNodes(startIds, direction);
+      applyHighlight(conn, 0.6);
+      nodeRects.style('filter', nd => conn.nodes.has(nd.id) ? 'url(#glow)' : null);
+      const kpi = computePathKPI(conn.nodes, conn.links);
+      const filterLabels = { fossil:'Fossil Sources', clean:'Clean Sources', ai:'AI Workloads' };
+      updateKPI(kpi, filterLabels[filter]);
+      const fv = computeFilteredNodeValues(conn.links);
+      updateNodeLabels(fv, conn.nodes);
+    }
+    hideTip();
+  });
+});
+
+/* ── Theme-aware color update ── */
+window.updateColors = function() {
+  updateGradients();
+  nodeRects.attr('fill', d => nodeColor(d.id));
+};
+
+/* ── Performance: pause pulse on hidden tab ── */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopParticles();
+  else if (masterTL.progress() === 1) startParticles();
+});
+
+});
+</script>
+</body>
+</html>
