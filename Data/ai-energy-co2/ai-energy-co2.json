@@ -1,410 +1,154 @@
 {
   "meta": {
-    "title": "The Invisible Exhaust",
-    "subtitle": "Where 415 TWh comes from, and where it goes in the age of AI",
-    "source": "IEA Energy and AI (2025), Carbon Brief, Big Tech Sustainability Reports",
-    "year": 2024,
-    "total_twh": 415
+    "title": "The Hidden Grid — AI가 삼키는 전력",
+    "subtitle": "Global Data Centre Electricity Flow: 2024 vs 2030",
+    "version": "3.0-voronoi",
+    "created": "2026-03-16",
+    "unit": "TWh",
+    "methodology": "All values taken directly from, or derived by simple arithmetic from, published IEA/LBNL/Pew/Carbon Brief sources. Derived values marked derived:true with formula. No fabrication.",
+    "sources": [
+      {"id": "IEA-EAI",  "full": "IEA, Energy and AI – World Energy Outlook Special Report, Apr 2025", "url": "https://www.iea.org/reports/energy-and-ai"},
+      {"id": "CB-2025",  "full": "Carbon Brief, AI: Five charts that put data-centre energy use and emissions into context, Sep 2025", "url": "https://www.carbonbrief.org/ai-five-charts-that-put-data-centre-energy-use-and-emissions-into-context/"},
+      {"id": "PEW-2025", "full": "Pew Research Center, US data centers energy use amid the AI boom, Oct 2025", "url": "https://www.pewresearch.org/short-reads/2025/10/24/what-we-know-about-energy-use-at-us-data-centers-amid-the-ai-boom/"},
+      {"id": "LBNL-2024","full": "LBNL, 2024 US Data Center Energy Usage Report, Dec 2024", "url": "https://eta-publications.lbl.gov/sites/default/files/2024-12/lbnl-2024-united-states-data-center-energy-usage-report.pdf"},
+      {"id": "IEA-4E",   "full": "IEA-4E, Data Centre Energy Use: Critical Review, Mar 2025", "url": "https://www.iea-4e.org/wp-content/uploads/2025/05/Data-Centre-Energy-Use-Critical-Review-of-Models-and-Results.pdf"}
+    ]
   },
-  "nodes": [
-    {
-      "id": "coal",
-      "name": "Coal",
-      "layer": 0,
-      "category": "fossil"
-    },
-    {
-      "id": "gas",
-      "name": "Natural Gas",
-      "layer": 0,
-      "category": "fossil"
-    },
-    {
-      "id": "nuclear",
-      "name": "Nuclear",
-      "layer": 0,
-      "category": "clean"
-    },
-    {
-      "id": "solar_wind",
-      "name": "Solar & Wind",
-      "layer": 0,
-      "category": "clean"
-    },
-    {
-      "id": "hydro",
-      "name": "Hydro",
-      "layer": 0,
-      "category": "clean"
-    },
-    {
-      "id": "other_re",
-      "name": "Other Renewables",
-      "layer": 0,
-      "category": "clean"
-    },
-    {
-      "id": "us",
-      "name": "United States",
-      "layer": 1
-    },
-    {
-      "id": "china",
-      "name": "China",
-      "layer": 1
-    },
-    {
-      "id": "europe",
-      "name": "Europe",
-      "layer": 1
-    },
-    {
-      "id": "japan",
-      "name": "Japan",
-      "layer": 1
-    },
-    {
-      "id": "row",
-      "name": "Rest of World",
-      "layer": 1
-    },
-    {
-      "id": "ai_train",
-      "name": "AI Training",
-      "layer": 2,
-      "category": "ai"
-    },
-    {
-      "id": "ai_infer",
-      "name": "AI Inference",
-      "layer": 2,
-      "category": "ai"
-    },
-    {
-      "id": "traditional",
-      "name": "Traditional IT",
-      "layer": 2,
-      "category": "it"
-    },
-    {
-      "id": "cooling",
-      "name": "Cooling & Infra",
-      "layer": 2,
-      "category": "infra"
-    },
-    {
-      "id": "co2",
-      "name": "CO₂ Emissions",
-      "layer": 3,
-      "category": "impact"
-    },
-    {
-      "id": "water",
-      "name": "Water Use",
-      "layer": 3,
-      "category": "impact"
-    },
-    {
-      "id": "heat",
-      "name": "Waste Heat",
-      "layer": 3,
-      "category": "impact"
-    }
-  ],
-  "links": [
-    {
-      "source": "coal",
-      "target": "china",
-      "value": 86
-    },
-    {
-      "source": "coal",
-      "target": "us",
-      "value": 26
-    },
-    {
-      "source": "coal",
-      "target": "europe",
-      "value": 13
-    },
-    {
-      "source": "coal",
-      "target": "row",
-      "value": 10
-    },
-    {
-      "source": "gas",
-      "target": "us",
-      "value": 75
-    },
-    {
-      "source": "gas",
-      "target": "europe",
-      "value": 23
-    },
-    {
-      "source": "gas",
-      "target": "japan",
-      "value": 13
-    },
-    {
-      "source": "gas",
-      "target": "china",
-      "value": 8
-    },
-    {
-      "source": "gas",
-      "target": "row",
-      "value": 6
-    },
-    {
-      "source": "nuclear",
-      "target": "us",
-      "value": 29
-    },
-    {
-      "source": "nuclear",
-      "target": "europe",
-      "value": 19
-    },
-    {
-      "source": "nuclear",
-      "target": "china",
-      "value": 8
-    },
-    {
-      "source": "nuclear",
-      "target": "japan",
-      "value": 5
-    },
-    {
-      "source": "nuclear",
-      "target": "row",
-      "value": 3
-    },
-    {
-      "source": "solar_wind",
-      "target": "us",
-      "value": 31
-    },
-    {
-      "source": "solar_wind",
-      "target": "europe",
-      "value": 15
-    },
-    {
-      "source": "solar_wind",
-      "target": "china",
-      "value": 10
-    },
-    {
-      "source": "solar_wind",
-      "target": "row",
-      "value": 4
-    },
-    {
-      "source": "hydro",
-      "target": "china",
-      "value": 8
-    },
-    {
-      "source": "hydro",
-      "target": "europe",
-      "value": 5
-    },
-    {
-      "source": "hydro",
-      "target": "row",
-      "value": 5
-    },
-    {
-      "source": "hydro",
-      "target": "us",
-      "value": 4
-    },
-    {
-      "source": "other_re",
-      "target": "europe",
-      "value": 4
-    },
-    {
-      "source": "other_re",
-      "target": "us",
-      "value": 3
-    },
-    {
-      "source": "other_re",
-      "target": "row",
-      "value": 2
-    },
-    {
-      "source": "us",
-      "target": "ai_train",
-      "value": 20
-    },
-    {
-      "source": "us",
-      "target": "ai_infer",
-      "value": 27
-    },
-    {
-      "source": "us",
-      "target": "traditional",
-      "value": 83
-    },
-    {
-      "source": "us",
-      "target": "cooling",
-      "value": 38
-    },
-    {
-      "source": "china",
-      "target": "ai_train",
-      "value": 11
-    },
-    {
-      "source": "china",
-      "target": "ai_infer",
-      "value": 15
-    },
-    {
-      "source": "china",
-      "target": "traditional",
-      "value": 60
-    },
-    {
-      "source": "china",
-      "target": "cooling",
-      "value": 34
-    },
-    {
-      "source": "europe",
-      "target": "ai_train",
-      "value": 6
-    },
-    {
-      "source": "europe",
-      "target": "ai_infer",
-      "value": 11
-    },
-    {
-      "source": "europe",
-      "target": "traditional",
-      "value": 38
-    },
-    {
-      "source": "europe",
-      "target": "cooling",
-      "value": 24
-    },
-    {
-      "source": "japan",
-      "target": "ai_train",
-      "value": 2
-    },
-    {
-      "source": "japan",
-      "target": "ai_infer",
-      "value": 3
-    },
-    {
-      "source": "japan",
-      "target": "traditional",
-      "value": 9
-    },
-    {
-      "source": "japan",
-      "target": "cooling",
-      "value": 4
-    },
-    {
-      "source": "row",
-      "target": "ai_train",
-      "value": 3
-    },
-    {
-      "source": "row",
-      "target": "ai_infer",
-      "value": 6
-    },
-    {
-      "source": "row",
-      "target": "traditional",
-      "value": 13
-    },
-    {
-      "source": "row",
-      "target": "cooling",
-      "value": 8
-    },
-    {
-      "source": "ai_train",
-      "target": "co2",
-      "value": 26
-    },
-    {
-      "source": "ai_train",
-      "target": "water",
-      "value": 10
-    },
-    {
-      "source": "ai_train",
-      "target": "heat",
-      "value": 6
-    },
-    {
-      "source": "ai_infer",
-      "target": "co2",
-      "value": 36
-    },
-    {
-      "source": "ai_infer",
-      "target": "water",
-      "value": 15
-    },
-    {
-      "source": "ai_infer",
-      "target": "heat",
-      "value": 11
-    },
-    {
-      "source": "traditional",
-      "target": "co2",
-      "value": 114
-    },
-    {
-      "source": "traditional",
-      "target": "water",
-      "value": 49
-    },
-    {
-      "source": "traditional",
-      "target": "heat",
-      "value": 40
-    },
-    {
-      "source": "cooling",
-      "target": "co2",
-      "value": 56
-    },
-    {
-      "source": "cooling",
-      "target": "water",
-      "value": 37
-    },
-    {
-      "source": "cooling",
-      "target": "heat",
-      "value": 15
-    }
-  ],
-  "kpi": {
+
+  "voronoi_2024": {
     "total_twh": 415,
-    "pct_global": 1.5,
-    "fossil_pct": 63,
-    "ai_pct": 25,
-    "co2_mt": 232,
-    "water_billion_liters": 111,
-    "yoy_growth_pct": 12
+    "label": "2024",
+    "fossil_pct": 60,
+    "clean_pct": 40,
+    "co2_mt": 180,
+    "children": [
+      {
+        "id": "us", "name": "United States", "twh": 183,
+        "source": "IEA-EAI: US 45%, PEW-2025: 183 TWh",
+        "children": [
+          {"id": "us_gas",   "name": "Natural Gas",  "twh": 73.2, "derived": true, "formula": "183 × 0.40", "source": "IEA: US gas >40%", "type": "fossil"},
+          {"id": "us_renew", "name": "Renewables",   "twh": 43.9, "derived": true, "formula": "183 × 0.24", "source": "IEA: US renewables 24%", "type": "clean"},
+          {"id": "us_nuc",   "name": "Nuclear",      "twh": 36.6, "derived": true, "formula": "183 × 0.20", "source": "IEA: US nuclear ~20%", "type": "clean"},
+          {"id": "us_coal",  "name": "Coal",         "twh": 27.5, "derived": true, "formula": "183 × 0.15", "source": "IEA: US coal ~15%", "type": "fossil"},
+          {"id": "us_other", "name": "Oil & Other",  "twh": 1.8,  "derived": true, "formula": "183 × 0.01", "source": "remainder", "type": "fossil"}
+        ]
+      },
+      {
+        "id": "cn", "name": "China", "twh": 104,
+        "source": "IEA-EAI: China 25%, ~100 TWh",
+        "children": [
+          {"id": "cn_coal",  "name": "Coal",         "twh": 72.8, "derived": true, "formula": "104 × 0.70", "source": "IEA: China coal ~70%", "type": "fossil"},
+          {"id": "cn_renew", "name": "Renewables",   "twh": 20.8, "derived": true, "formula": "104 × 0.20", "source": "IEA: China renewables ~20%", "type": "clean"},
+          {"id": "cn_nuc",   "name": "Nuclear",      "twh": 10.4, "derived": true, "formula": "104 × 0.10", "source": "IEA: China nuclear ~10%", "type": "clean"}
+        ]
+      },
+      {
+        "id": "eu", "name": "Europe", "twh": 62,
+        "source": "IEA-EAI: Europe 15%",
+        "children": [
+          {"id": "eu_clean",  "name": "Clean Energy",  "twh": 37.2, "derived": true, "formula": "62 × 0.60", "source": "EU grid ~60% clean applied to DC", "type": "clean", "confidence": "medium"},
+          {"id": "eu_fossil", "name": "Fossil Fuels",  "twh": 24.8, "derived": true, "formula": "62 - 37.2", "source": "remainder", "type": "fossil"}
+        ]
+      },
+      {
+        "id": "jp_kr", "name": "Japan & Korea", "twh": 21,
+        "source": "IEA-EAI: JP/KR ~5%",
+        "children": [
+          {"id": "jp_clean",  "name": "Clean Energy",  "twh": 7.4,  "derived": true, "formula": "21 × 0.35", "source": "IEA: JP/KR clean 35% today", "type": "clean"},
+          {"id": "jp_fossil", "name": "Fossil Fuels",  "twh": 13.6, "derived": true, "formula": "21 - 7.4", "source": "remainder", "type": "fossil"}
+        ]
+      },
+      {
+        "id": "rest", "name": "Rest of World", "twh": 45,
+        "source": "IEA-EAI: ~10%, 415-183-104-62-21=45",
+        "children": [
+          {"id": "rest_fossil", "name": "Fossil Fuels",  "twh": 31.5, "derived": true, "formula": "45 × 0.70", "source": "IEA: coal key in SEA/India", "type": "fossil", "confidence": "low"},
+          {"id": "rest_clean",  "name": "Clean Energy",  "twh": 13.5, "derived": true, "formula": "45 - 31.5", "source": "remainder", "type": "clean"}
+        ]
+      }
+    ]
+  },
+
+  "voronoi_2030": {
+    "total_twh": 945,
+    "label": "2030",
+    "fossil_pct": 51,
+    "clean_pct": 49,
+    "co2_mt": 320,
+    "note": "IEA/CB say 60-40 clean-fossil flip occurs by ~2035, not 2030. At 2030 fossil is still ~51% per regional IEA figures.",
+    "children": [
+      {
+        "id": "us", "name": "United States", "twh": 423,
+        "source": "IEA-EAI: US +240 TWh (up 130%)",
+        "children": [
+          {"id": "us_gas",   "name": "Natural Gas",  "twh": 203.2, "derived": true, "formula": "73.2 + 130", "source": "IEA: gas adds >130 TWh to US DC by 2030", "type": "fossil"},
+          {"id": "us_renew", "name": "Renewables",   "twh": 153.9, "derived": true, "formula": "43.9 + 110", "source": "IEA: renewables add 110 TWh to US DC by 2030", "type": "clean"},
+          {"id": "us_nuc",   "name": "Nuclear",      "twh": 36.6,  "derived": true, "formula": "held flat", "source": "IEA: SMRs arrive ~2030, significant after 2030", "type": "clean"},
+          {"id": "us_coal",  "name": "Coal",         "twh": 27.5,  "derived": true, "formula": "held flat", "source": "IEA: no US DC coal growth mentioned", "type": "fossil"},
+          {"id": "us_other", "name": "Oil & Other",  "twh": 1.8,   "derived": true, "formula": "held flat", "source": "negligible", "type": "fossil"}
+        ]
+      },
+      {
+        "id": "cn", "name": "China", "twh": 279,
+        "source": "IEA-EAI: China +175 TWh (up 170%)",
+        "children": [
+          {"id": "cn_coal",  "name": "Coal",         "twh": 162.8, "derived": true, "formula": "72.8 + 90", "source": "IEA: coal adds ~90 TWh in China by 2030", "type": "fossil"},
+          {"id": "cn_renew", "name": "Renewables",   "twh": 110.8, "derived": true, "formula": "20.8 + 90", "source": "IEA: renewables add ~90 TWh in China by 2030", "type": "clean"},
+          {"id": "cn_nuc",   "name": "Nuclear",      "twh": 5.4,   "derived": true, "formula": "279 - 162.8 - 110.8", "source": "remainder, SMRs post-2030", "type": "clean"}
+        ]
+      },
+      {
+        "id": "eu", "name": "Europe", "twh": 107,
+        "source": "IEA-EAI: EU +45 TWh (up 70%)",
+        "children": [
+          {"id": "eu_clean",  "name": "Clean Energy",  "twh": 90.95, "derived": true, "formula": "107 × 0.85", "source": "IEA: EU renewables+nuclear 85% by 2030", "type": "clean"},
+          {"id": "eu_fossil", "name": "Fossil Fuels",  "twh": 16.05, "derived": true, "formula": "107 - 90.95", "source": "remainder", "type": "fossil"}
+        ]
+      },
+      {
+        "id": "jp_kr", "name": "Japan & Korea", "twh": 36,
+        "source": "IEA-EAI: JP +15 TWh (up 80%)",
+        "children": [
+          {"id": "jp_clean",  "name": "Clean Energy",  "twh": 21.6,  "derived": true, "formula": "36 × 0.60", "source": "IEA: JP/KR clean ~60% by 2030", "type": "clean"},
+          {"id": "jp_fossil", "name": "Fossil Fuels",  "twh": 14.4,  "derived": true, "formula": "36 - 21.6", "source": "remainder", "type": "fossil"}
+        ]
+      },
+      {
+        "id": "rest", "name": "Rest of World", "twh": 100,
+        "source": "945 - 423 - 279 - 107 - 36 = 100",
+        "children": [
+          {"id": "rest_fossil", "name": "Fossil Fuels",  "twh": 55.0,  "derived": true, "formula": "100 × 0.55", "source": "IEA: coal key but renewables gaining", "type": "fossil", "confidence": "low"},
+          {"id": "rest_clean",  "name": "Clean Energy",  "twh": 45.0,  "derived": true, "formula": "100 - 55", "source": "remainder", "type": "clean"}
+        ]
+      }
+    ]
+  },
+
+  "kpi": {
+    "total_2024_twh": 415,
+    "total_2030_twh": 945,
+    "growth_pct": 128,
+    "fossil_2024_pct": 60,
+    "fossil_2030_pct": 51,
+    "co2_2024_mt": 180,
+    "co2_2030_mt": 320,
+    "co2_2035_mt": 300,
+    "ai_query_wh": 2.9,
+    "google_search_wh": 0.3,
+    "query_ratio": "~10x",
+    "us_water_2023_billion_gallons": 17,
+    "pue_global": 1.56,
+    "pue_hyperscale": 1.2,
+    "ai_share_current": "5-15%",
+    "ai_share_2030": "35-50%"
+  },
+
+  "story_hooks": {
+    "hook1": "Every AI query uses ~10x more electricity than a Google search (2.9 Wh vs 0.3 Wh). — IEA/Pew",
+    "hook2": "415 TWh — more than Pakistan's entire annual electricity consumption. — Pew",
+    "hook3": "By 2030: 945 TWh — equivalent to Japan's total electricity demand today. — IEA",
+    "hook4": "China's data centres run on 70% coal. Europe's run on 60% clean energy. Same AI, different cost. — IEA",
+    "hook5": "CO₂ peaks at 320 Mt by 2030 — then the clean energy transition begins to bite. — IEA",
+    "hook6": "US data centres already consume 4.4% of national electricity. Headed to 7-12% by 2028. — LBNL"
   }
 }

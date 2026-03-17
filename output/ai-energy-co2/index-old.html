@@ -1,262 +1,138 @@
 <!-- ============================================
-     TEMPLATE E — Poster Infographic
+     TEMPLATE A — Single Interactive (Full-bleed)
      Project: The Hidden Grid (ai-energy-co2)
      COMBO-9 Voronoi (Split Variant)
-     Frame: light  |  Chart: dark (#0B0B1A)
+     Layout: Left text + Right chart (magazine)
      ============================================ -->
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
+<html lang="ko" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Hidden Grid — AI가 삼키는 전력</title>
-
-<!-- CDN Libraries -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-voronoi-map@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-voronoi-treemap@1"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
-
 <style>
-/* ═══════════════════════════════════════════════
-   PART 1 — TEMPLATE E FRAME CSS
-   ═══════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
-
+/* ═══ BRAND TOKENS (Template A — DO NOT MODIFY) ═══ */
 :root {
-  /* ── Frame Theme (Light) ── */
-  --bg-color: #F5F0EB;
+  --c1:#009FDA; --c2:#EC008C; --c3:#FF9900;
+  --c4:#81C800; --c5:#FED100; --c6:#1F145D;
+  --gray:#9C9C9C;
+  --c1-60:#66C5E8; --c2-60:#F466B8; --c3-60:#FFB866;
+  --c4-60:#ADD966; --c5-60:#FEDF66; --c6-60:#7F7A9E;
+  --c1-30:#B3E2F4;--c2-30:#F9B8DA;--c3-30:#FFDCB3;--c4-30:#D6ECB3;--c5-30:#FFF0B3;--c6-30:#BFBBCE;
+
+  --bg: #FAFAFA;
   --bg-elevated: #FFFFFF;
-  --text-primary: #0B0B1A;
-  --text-secondary: rgba(11, 11, 26, 0.6);
-  --border-color: #0B0B1A;
-  --accent-color: #E63946;
-  --divider-color: rgba(11, 11, 26, 0.15);
-  --chart-border: rgba(0, 0, 0, 0.05);
-  --chart-shadow:
-    0 1px 2px rgba(0,0,0,0.1),
-    0 4px 8px rgba(0,0,0,0.1),
-    0 16px 32px rgba(0,0,0,0.15),
-    0 32px 64px rgba(0,0,0,0.1),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-
-  /* ── Chart Palette (OECD-style muted pastels) ── */
-  --c1: #7EC8D9;  /* soft teal — Nuclear */
-  --c2: #E8A0A0;  /* soft pink — Coal */
-  --c3: #F2C478;  /* soft amber — Natural Gas */
-  --c4: #A8D8A0;  /* soft mint green — Renewables */
-  --c5: #E8D4A0;  /* soft beige — Oil & Other */
-  --c6: #B8B0D0;  /* soft lavender */
-  --c-clean-agg: #90C8B8;  /* soft sage teal */
-  --c-fossil-agg: #E8B890; /* soft warm peach */
-
-  /* ── Chart Context (tooltip / detail panel dark overlays) ── */
+  --text-h1: #111111;
+  --text-body: #444444;
+  --text-label: #666666;
+  --text-muted: #AAAAAA;
+  --border: rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.08);
+}
+[data-theme="dark"] {
   --bg: #0B0B1A;
+  --bg-elevated: rgba(255,255,255,.04);
   --text-h1: #FFFFFF;
   --text-body: #CCCCDD;
   --text-label: #88AACC;
   --text-muted: #556677;
   --border: rgba(255,255,255,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
   --shadow-md: 0 4px 20px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
 }
 
-/* ── Base Reset ── */
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+/* ═══ RESET ═══ */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
+html { font-size:16px; -webkit-font-smoothing:antialiased }
 body {
-  font-family: 'Inter', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-  background-color: #D1D5DB;
-  padding: 40px 20px;
-  display: flex;
-  justify-content: center;
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
+  font-family:'Noto Sans KR', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-body);
+  transition: background .5s ease, color .5s ease;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
-/* ── 1. Outer Frame ── */
-.infographic-frame {
-  background-color: var(--bg-color);
-  border: 2px solid var(--border-color);
+/* ═══ SPLIT LAYOUT ═══ */
+.page-split {
+  display: grid;
+  grid-template-columns: clamp(280px, 33vw, 420px) 1fr;
+  min-height: 100vh;
+}
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 48px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.1);
-  margin: 0 auto;
-  max-width: 1600px;
-  min-height: 800px;
-}
-.infographic-frame[data-layout="portrait"] {
-  max-width: 1200px;
-  min-height: 1400px;
-}
-
-/* ── 2. Header ── */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 32px;
-}
-.header-content { max-width: 800px }
-.title {
-  font-size: clamp(40px, 5vw, 64px);
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-}
-.subtitle {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-.brand-logo {
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-transform: uppercase;
-  padding: 8px 16px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-/* ── 3 & 4. Middle Section ── */
-.middle-section {
-  display: grid;
-  grid-template-columns: minmax(160px, 0.7fr) 3fr;
-  gap: 48px;
-  flex-grow: 1;
-}
-
-/* ── 3. Context Bar (Template E original) ── */
-.context-bar {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.context-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-}
-.context-item:not(:last-child) {
-  border-bottom: 1px solid var(--divider-color);
-}
-.kpi-value {
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1;
-  color: var(--accent-color);
-  letter-spacing: -0.02em;
-}
-.kpi-value .kpi-arrow { font-size: 50%; opacity: 0.35; margin: 0 4px }
-.kpi-unit {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-primary);
-}
-.context-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  font-weight: 500;
-}
-
-/* ── 4. Chart Area (Light Background, matches frame) ── */
-.chart-area {
-  background-color: var(--bg-color);
-  border: 1px solid var(--chart-border);
-  border-radius: 16px;
-  box-shadow: var(--chart-shadow);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  position: relative;
-  min-height: 550px;
-  overflow: visible;
-  padding: 8px;
-}
-.chart-area::before { display: none }
-.infographic-frame[data-layout="portrait"] .chart-area {
-  min-height: 1000px;
-}
-
-/* ═══════════════════════════════════════════════
-   PART 2 — CHART-SCOPED CSS (inside .chart-area)
-   ═══════════════════════════════════════════════ */
-#chartWrap { width: 100%; flex: 1; position: relative; min-height: 0 }
-.chart-area svg { display: block; width: 100%; height: 100% }
-
-/* Cell & label transitions */
-.cell { transition: fill-opacity 0.4s ease, stroke-opacity 0.4s ease }
-.plabel, .clabel { transition: opacity 0.4s ease }
-
-/* Legend (absolute inside chart-area, compact row) */
-.chart-area .legend-stack {
-  position: absolute;
-  bottom: 12px;
-  left: 20px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 2px 10px;
+  min-height: 100vh;
   z-index: 10;
-  max-width: 70%;
 }
-.legend-item { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-label) }
-.legend-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0 }
-
-/* ── 5. Insight Area ── */
-.insight-area {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.insight-card {
-  background-color: var(--bg-elevated);
-  padding: 12px;
-  border: 1px solid var(--divider-color);
-  border-radius: 12px;
+.right-panel {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.insight-icon {
-  width: 24px; height: 24px;
-  background-color: var(--bg-color);
-  border: 1px solid var(--divider-color);
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--accent-color);
-}
-.insight-icon svg { width: 14px; height: 14px }
-.insight-title { font-size: 12px; font-weight: 800; line-height: 1.3 }
-.insight-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.6; font-weight: 500 }
-
-/* ── 6. Footer ── */
-.footer {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-top: 24px;
-  border-top: 1px solid var(--divider-color);
+  padding: 24px 0;
+  overflow: visible;
+  position: relative;
 }
-.source-text { font-size: 11px; color: var(--text-primary); opacity: 0.4; font-weight: 500 }
-.footer-brand { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary) }
 
-/* ── Tooltip (fixed overlay) ── */
+/* ═══ TYPOGRAPHY ═══ */
+.t-hero {
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 900;
+  color: var(--text-h1);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+.t-sub {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-label);
+  line-height: 1.5;
+  opacity: 0.6;
+  margin-top: 16px;
+  margin-bottom: 36px;
+}
+.t-kpi-num { font-size:clamp(28px,3.5vw,44px); font-weight:700; line-height:1 }
+.t-kpi-desc { font-size:12px; font-weight:400; color:var(--text-muted); margin-top:4px }
+.t-label { font-size:11px; font-weight:500; color:var(--text-label) }
+.t-source { font-size:10px; font-weight:400; color:var(--text-muted); line-height:1.6 }
+.t-node { font-size:11px; font-weight:600; fill:var(--text-h1) }
+.t-value { font-size:10px; font-weight:400; fill:var(--text-muted) }
+
+/* ═══ CHART AREA ═══ */
+.chart-area { position:relative; width:100% }
+.chart-area svg { display:block; width:calc(100% + 32px); height:auto }
+
+/* ═══ KPI STACK ═══ */
+.kpi-stack { display:flex; flex-direction:column; gap:16px; margin-bottom:28px }
+.kpi-item { border-left:2px solid; padding-left:14px }
+.kpi-arrow { font-size:50%; opacity:0.35; margin:0 3px }
+.kpi-unit { font-size:13px; opacity:0.45; margin-left:3px; font-weight:400 }
+
+/* ═══ INSIGHT TEXT ═══ */
+.insight-text { font-size:13px; color:var(--text-label); line-height:1.7; opacity:0.6; margin-bottom:28px }
+.insight-text strong { color:var(--text-h1); opacity:1 }
+
+/* ═══ LEGEND STACK ═══ */
+.legend-stack { display:flex; flex-direction:column; gap:5px; margin-bottom:20px }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--text-label) }
+.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0 }
+.legend-sep { height:1px; background:var(--border); margin:4px 0; width:80px }
+
+/* ═══ SOURCE ═══ */
+.source-line { margin-top:auto; padding-top:16px }
+
+/* ═══ TOOLTIP ═══ */
 .vf-tip {
   position:fixed; pointer-events:none;
   background:rgba(11,11,26,.92); backdrop-filter:blur(8px);
@@ -268,7 +144,27 @@ body {
 }
 .vf-tip strong { color:var(--text-h1) }
 
-/* ── Detail Panel (fixed overlay) ── */
+/* ═══ THEME TOGGLE ═══ */
+.theme-btn {
+  position:fixed; bottom:24px; right:24px;
+  width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--border); background:var(--bg-elevated);
+  box-shadow:var(--shadow-md); cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  z-index:300; transition:box-shadow .2s;
+}
+.theme-btn:hover { box-shadow:var(--shadow-lg) }
+
+/* ═══ LOADING ═══ */
+.vf-load { position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s }
+.vf-load.hide{opacity:0;pointer-events:none}
+.vf-load-dot{ width:8px;height:8px;border-radius:50%;background:var(--c1);animation:vf-pulse .8s ease infinite alternate }
+.vf-load-dot:nth-child(2){animation-delay:.15s}
+.vf-load-dot:nth-child(3){animation-delay:.3s}
+@keyframes vf-pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.vf-load-dots{display:flex;gap:6px}
+
+/* ═══ DETAIL PANEL ═══ */
 .detail-panel {
   position:fixed; top:0; right:0; width:380px; height:100vh;
   background:var(--bg); border-left:1px solid var(--border);
@@ -276,7 +172,6 @@ body {
   padding:32px 24px; transform:translateX(100%);
   transition:transform .4s cubic-bezier(.23,1,.32,1);
   z-index:250; overflow-y:auto;
-  color:var(--text-body);
 }
 .detail-panel.open { transform:translateX(0) }
 .detail-close { position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;line-height:1 }
@@ -291,109 +186,53 @@ body {
 .detail-breakdown { font-size:13px;color:var(--text-body);margin:16px 0;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);line-height:1.8 }
 .detail-insight { font-size:13px;color:var(--text-label);line-height:1.7;font-style:italic }
 
-/* ── Loading Overlay ── */
-.vf-load { position:fixed;inset:0;background:var(--bg-color);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s }
-.vf-load.hide{opacity:0;pointer-events:none}
-.vf-load-dot{ width:8px;height:8px;border-radius:50%;background:var(--c1);animation:vf-pulse .8s ease infinite alternate }
-.vf-load-dot:nth-child(2){animation-delay:.15s}
-.vf-load-dot:nth-child(3){animation-delay:.3s}
-@keyframes vf-pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
-.vf-load-dots{display:flex;gap:6px}
-
-/* ── Responsive ── */
-@media (max-width: 1199px) {
-  .infographic-frame { padding: 32px }
-  .middle-section { gap: 32px }
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1024px){
+  .page-split{grid-template-columns:1fr}
+  .left-panel{min-height:auto;padding:32px 24px 16px}
+  .right-panel{padding:0 0 32px}
+  .chart-area svg{width:100%}
+  .detail-panel{width:320px}
 }
-@media (max-width: 767px) {
-  body { padding: 16px }
-  .infographic-frame { padding: 24px }
-  .header { flex-direction: column; gap: 24px }
-  .middle-section { grid-template-columns: 1fr; gap: 32px }
-  .insight-area { grid-template-columns: 1fr }
-  .footer { flex-direction: column; gap: 16px; align-items: flex-start }
-  .detail-panel { width: 100% }
+@media(max-width:768px){
+  .left-panel{padding:24px 20px 12px}
+  .t-hero{font-size:36px}
+  .kpi-stack{flex-direction:row;flex-wrap:wrap;gap:12px}
+  .kpi-item{flex:1;min-width:120px}
+  .t-kpi-num{font-size:24px}
+  .detail-panel{width:100%}
 }
 </style>
 </head>
 <body>
 
-<!-- Loading Overlay -->
-<div class="vf-load" id="loader">
-  <div class="vf-load-dots">
-    <div class="vf-load-dot"></div>
-    <div class="vf-load-dot"></div>
-    <div class="vf-load-dot"></div>
-  </div>
-</div>
+<div class="vf-load" id="loader"><div class="vf-load-dots"><div class="vf-load-dot"></div><div class="vf-load-dot"></div><div class="vf-load-dot"></div></div></div>
 
-<!-- ═══ TEMPLATE E FRAME ═══ -->
-<div class="infographic-frame" data-layout="portrait" id="mainFrame" style="opacity:0">
-
-  <!-- 2. Header -->
-  <header class="header">
-    <div class="header-content">
-      <h1 class="title">The Hidden Grid</h1>
-      <p class="subtitle">AI가 삼키는 전력 — Global Data Centre Electricity 2024 vs 2030</p>
+<main class="page-split" style="opacity:0" id="mainPage">
+  <div class="left-panel">
+    <div>
+      <h1 class="t-hero">THE<br>HIDDEN<br>GRID</h1>
+      <p class="t-sub">AI가 삼키는 전력 — Global Data Centre Electricity 2024 vs 2030</p>
     </div>
-    <div class="brand-logo">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-        <path d="M2 17l10 5 10-5"/>
-        <path d="M2 12l10 5 10-5"/>
-      </svg>
-      VIZFORGE
+
+    <div class="kpi-stack" id="kpiStrip"></div>
+
+    <p class="insight-text">
+      <strong>415 TWh</strong>는 파키스탄 전체 전력보다 많다. 2030년 <strong>945 TWh</strong>는 일본 전체 전력과 맞먹는다. 화석 비율은 60%&rarr;51%로 줄지만, 절대량은 <strong>249&rarr;482 TWh</strong>로 약 2배. 중국 석탄 70%, 유럽 청정 85% &mdash; 같은 AI, 다른 대가.
+    </p>
+
+    <div class="legend-stack" id="legend"></div>
+
+    <div class="source-line">
+      <span class="t-source">IEA Energy and AI (2025) · Carbon Brief (2025) · Pew Research (2025) · LBNL (2024) · Derived values from published ratios</span>
     </div>
-  </header>
-
-  <!-- 3 & 4. Middle Section -->
-  <div class="middle-section">
-
-    <!-- 3. Context Bar — JS fills via #kpiStrip -->
-    <section class="context-bar" id="kpiStrip"></section>
-
-    <!-- 4. Chart Slot (dark background) -->
-    <main id="chart-slot" class="chart-area">
-      <div id="chartWrap"></div>
-      <div id="legend" class="legend-stack"></div>
-    </main>
-
   </div>
 
-  <!-- 5. Insight Area -->
-  <section class="insight-area">
-    <div class="insight-card">
-      <div class="insight-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-      </div>
-      <h3 class="insight-title">Equivalent Scale</h3>
-      <p class="insight-desc">415 TWh는 파키스탄 전체 전력 소비보다 많다. 2030년 945 TWh는 일본 전체 전력과 맞먹는다.</p>
-    </div>
-    <div class="insight-card">
-      <div class="insight-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      </div>
-      <h3 class="insight-title">The Paradox</h3>
-      <p class="insight-desc">화석 비율은 60%→51%로 줄지만, 절대량은 249→482 TWh로 약 2배 증가한다.</p>
-    </div>
-    <div class="insight-card">
-      <div class="insight-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      </div>
-      <h3 class="insight-title">Regional Divide</h3>
-      <p class="insight-desc">중국 석탄 70%, 유럽 청정 85% — 같은 AI, 다른 대가.</p>
-    </div>
-  </section>
+  <div class="right-panel">
+    <div class="chart-area" id="chartWrap"></div>
+  </div>
+</main>
 
-  <!-- 6. Footer -->
-  <footer class="footer">
-    <div class="source-text">Source: IEA Energy and AI (2025) · Carbon Brief (2025) · Pew Research (2025) · LBNL (2024) · Derived values from published ratios</div>
-    <div class="footer-brand">VIZFORGE</div>
-  </footer>
-
-</div>
-
-<!-- Fixed Overlays (outside frame) -->
 <div class="detail-panel" id="detailPanel">
   <button class="detail-close" id="detailClose">&times;</button>
   <h3 class="detail-region" id="detailRegion"></h3>
@@ -404,10 +243,8 @@ body {
 </div>
 
 <div class="vf-tip" id="tooltip"></div>
+<button class="theme-btn" id="themeBtn">&#9790;</button>
 
-<!-- ═══════════════════════════════════════════════
-     PART 3 — SCRIPTS
-     ═══════════════════════════════════════════════ -->
 <script>
 (function(){
 'use strict';
@@ -489,6 +326,7 @@ function refreshColors(){
 }
 refreshColors();
 
+/* Modify 5: Clean Energy gets --c1-60 (light blue), Renewables keeps --c4 (green) */
 const ENERGY_COLORS = {
   'Coal':'--c2','Natural Gas':'--c3','Oil & Other':'--c3-60',
   'Fossil Fuels':'--c3-60','Renewables':'--c4','Nuclear':'--c1','Clean Energy':'--c1-60'
@@ -500,18 +338,22 @@ function eColorResolved(name){
 
 /* ═══ SVG SETUP — TWO SEMICIRCLES (diagonal, different sizes) ═══ */
 const W = 1200, H = 700;
-const R24 = 222, R30 = 336;
+const R24 = 185, R30 = 280;
 
+/* Direction from 2024→2030: ~35° below horizontal (SVG y-down) */
 const ALPHA = 35 * Math.PI / 180;
 const ax = Math.cos(ALPHA), ay = Math.sin(ALPHA);
 const GAP = 14;
 
-const compCX = 600, compCY = 315;
+/* Each semicircle center sits on its flat edge.
+   We place the two flat edges GAP apart, symmetric about the composition center. */
+const compCX = 580, compCY = 340;
 const cx24 = compCX - (GAP / 2) * ax;
 const cy24 = compCY - (GAP / 2) * ay;
 const cx30 = compCX + (GAP / 2) * ax;
 const cy30 = compCY + (GAP / 2) * ay;
 
+/* Generate semicircle polygon (convex, for d3-voronoi-treemap clip) */
 function semiPoly(r, ox, oy, openAngle, n) {
   n = n || 48;
   const pts = [];
@@ -522,7 +364,9 @@ function semiPoly(r, ox, oy, openAngle, n) {
   return pts;
 }
 
+/* 2024 opens upper-left (away from 2030) */
 const seg24Poly = semiPoly(R24, cx24, cy24, ALPHA + Math.PI, 48);
+/* 2030 opens lower-right */
 const seg30Poly = semiPoly(R30, cx30, cy30, ALPHA, 48);
 
 const svg = d3.select('#chartWrap').append('svg')
@@ -544,9 +388,21 @@ defs.append('filter').attr('id','glow-s')
 defs.append('filter').attr('id','gooey')
   .html('<feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="g"/><feBlend in="SourceGraphic" in2="g"/>');
 
-// G2 — flat fill (no radial gradient; Nadieh-style matte cells)
+// G2 Radial gradients — per energy source, objectBoundingBox
+const gradientEntries = Object.keys(ENERGY_COLORS);
+gradientEntries.forEach(name => {
+  const hex = eColorResolved(name);
+  const c = d3.rgb(hex);
+  const id = 'rg-' + name.replace(/[\s&]+/g, '-').toLowerCase();
+  const gr = defs.append('radialGradient').attr('id', id)
+    .attr('cx', '30%').attr('cy', '30%').attr('r', '70%')
+    .attr('fx', '30%').attr('fy', '30%');
+  gr.append('stop').attr('offset', '0%').attr('stop-color', c.brighter(0.9));
+  gr.append('stop').attr('offset', '50%').attr('stop-color', c);
+  gr.append('stop').attr('offset', '100%').attr('stop-color', c.darker(1.1));
+});
 
-/* ═══ VORONOI COMPUTATION (EX-1) ═══ */
+/* ═══ VORONOI COMPUTATION (EX-1) — takes arbitrary convex clip polygon ═══ */
 function buildVoronoi(yearData, clipPoly) {
   const tree = { name: 'root', children: yearData.children.map(r => ({
     name: r.name, id: r.id,
@@ -566,6 +422,7 @@ const root30 = buildVoronoi(DATA.voronoi_2030, seg30Poly);
 /* ═══ RENDER ═══ */
 const mainG = svg.append('g');
 
+// Semicircle outlines (for F5 draw-in)
 const seg24Outline = mainG.append('path')
   .attr('d', 'M' + seg24Poly.map(p => p.join(',')).join('L') + 'Z')
   .attr('fill', 'none').attr('stroke', C.h1).attr('stroke-opacity', 0.12).attr('stroke-width', 1.5);
@@ -575,6 +432,7 @@ const seg30Outline = mainG.append('path')
 
 const cellMap24 = new Map(), cellMap30 = new Map();
 
+/* Modify 7: MIN_LABEL_AREA per segment */
 const MIN_LABEL_AREA_24 = 800;
 const MIN_LABEL_AREA_30 = 600;
 
@@ -584,23 +442,27 @@ function renderSegment(parent, root, yr, cellMap, minLabelArea) {
   const cellsG = g.append('g').attr('class', 'cells-g');
   const bordersG = g.append('g').attr('class', 'borders-g');
 
+  // Depth-1 borders
   root.descendants().filter(d => d.depth === 1).forEach(d => {
     bordersG.append('path').datum(d)
       .attr('d', 'M' + d.polygon.join('L') + 'Z')
       .attr('fill', 'none').attr('stroke', C.h1)
-      .attr('stroke-opacity', 0).attr('stroke-width', 1).attr('class', 'pborder');
+      .attr('stroke-opacity', 0).attr('stroke-width', 2).attr('class', 'pborder');
   });
 
+  // Depth-2 cells
   root.leaves().forEach(d => {
+    const gid = 'rg-' + d.data.name.replace(/[\s&]+/g, '-').toLowerCase();
     const el = cellsG.append('path').datum(d)
       .attr('d', 'M' + d.polygon.join('L') + 'Z')
-      .attr('fill', eColorResolved(d.data.name)).attr('fill-opacity', 0.75)
-      .attr('stroke', C.h1).attr('stroke-opacity', 0.15).attr('stroke-width', 0.5)
+      .attr('fill', 'url(#' + gid + ')').attr('stroke', C.h1)
+      .attr('stroke-opacity', 0.25).attr('stroke-width', 0.5)
       .attr('opacity', 0).attr('class', 'cell').style('cursor', 'pointer');
     const key = d.data.regionId + '__' + d.data.name;
     cellMap.set(key, { el, data: d.data, polygon: d.polygon, yr });
   });
 
+  // Labels — tiered visibility to prevent overlap
   const labelsG = g.append('g').attr('class', 'labels-g').attr('pointer-events', 'none');
 
   const TIER_REGION = minLabelArea * 3;
@@ -617,7 +479,6 @@ function renderSegment(parent, root, yr, cellMap, minLabelArea) {
       .attr('text-anchor', 'middle').attr('dominant-baseline', 'central')
       .attr('font-size', yr === 2030 ? 11 : 9).attr('font-weight', 700)
       .attr('fill', C.h1).attr('opacity', 0).attr('class', 'plabel')
-      .attr('data-region', d.data.id)
       .text(d.data.name);
   });
 
@@ -634,17 +495,16 @@ function renderSegment(parent, root, yr, cellMap, minLabelArea) {
       labelsG.append('text').attr('x', c[0]).attr('y', c[1] - 4)
         .attr('text-anchor', 'middle').attr('font-size', fs)
         .attr('font-weight', 500).attr('fill', C.h1).attr('fill-opacity', 0.8)
-        .attr('opacity', 0).attr('class', 'clabel')
-        .attr('data-region', d.data.regionId).text(d.data.name);
+        .attr('opacity', 0).attr('class', 'clabel').text(d.data.name);
       labelsG.append('text').attr('x', c[0]).attr('y', c[1] + 7)
         .attr('text-anchor', 'middle').attr('font-size', fs - 1.5)
         .attr('fill', C.label).attr('opacity', 0).attr('class', 'clabel')
-        .attr('data-region', d.data.regionId).text(d.data.twh + ' TWh');
+        .text(d.data.twh + ' TWh');
     } else {
       labelsG.append('text').attr('x', c[0]).attr('y', c[1] + 1)
         .attr('text-anchor', 'middle').attr('font-size', fs - 1)
         .attr('fill', C.label).attr('opacity', 0).attr('class', 'clabel')
-        .attr('data-region', d.data.regionId).text(d.data.twh + ' TWh');
+        .text(d.data.twh + ' TWh');
     }
   });
 
@@ -656,7 +516,7 @@ const v30 = renderSegment(mainG, root30, 2030, cellMap30, MIN_LABEL_AREA_30);
 
 const crossG = mainG.append('g').attr('class', 'cross-links');
 
-// Year labels outside semicircles
+// Year labels OUTSIDE semicircles (beyond arc apex for readability)
 const YL_MARGIN = 28;
 const lbl24x = cx24 + (R24 + YL_MARGIN) * Math.cos(ALPHA + Math.PI);
 const lbl24y = cy24 + (R24 + YL_MARGIN) * Math.sin(ALPHA + Math.PI);
@@ -689,11 +549,12 @@ yearLabels.append('text').attr('x', lbl30x).attr('y', lbl30y + 22)
   .attr('class', 'ylbl').attr('pointer-events', 'none')
   .text('945 TWh');
 
+// Cross-highlight line (reusable)
 const crossLine = crossG.append('line')
   .attr('stroke', C.c5).attr('stroke-width', 1.5)
   .attr('stroke-dasharray', '4 3').attr('opacity', 0);
 
-/* ═══ ANNOTATIONS ═══ */
+/* ═══ ANNOTATIONS — thin leader lines + text outside semicircles ═══ */
 (function addAnnotations() {
   const annotG = mainG.append('g').attr('class', 'annotations').attr('pointer-events', 'none');
   const annotDefs = [
@@ -727,22 +588,32 @@ const crossLine = crossG.append('line')
   });
 })();
 
-/* ═══ LEGEND ═══ */
-const legendItems = [
+/* ═══ LEGEND (vertical stack) ═══ */
+const legendSources = [
   { name: 'Coal', var: '--c2' }, { name: 'Natural Gas', var: '--c3' },
   { name: 'Oil & Other', var: '--c3-60' },
-  { name: 'Renewables', var: '--c4' }, { name: 'Nuclear', var: '--c1' },
-  { name: 'Clean Energy', var: '--c1-60' }
+  { name: 'Renewables', var: '--c4' }, { name: 'Nuclear', var: '--c1' }
+];
+const legendAggregates = [
+  { name: 'Clean Energy (agg.)', var: '--c1-60' },
+  { name: 'Fossil Fuels (agg.)', var: '--c3-60' }
 ];
 const leg = d3.select('#legend');
 leg.html('');
-legendItems.forEach(l => {
+legendSources.forEach(l => {
   const it = leg.append('div').attr('class', 'legend-item');
   it.append('div').attr('class', 'legend-dot').style('background', 'var(' + l.var + ')');
   it.append('span').text(l.name);
 });
+leg.append('div').attr('class', 'legend-sep');
+legendAggregates.forEach(l => {
+  const it = leg.append('div').attr('class', 'legend-item');
+  it.append('div').attr('class', 'legend-dot').style('background', 'var(' + l.var + ')')
+    .style('border', '1.5px dashed rgba(255,255,255,0.35)');
+  it.append('span').text(l.name);
+});
 
-/* ═══ KPI STACK ═══ */
+/* ═══ KPI STACK (vertical) ═══ */
 function sumType(yearData, type) {
   let s = 0; yearData.children.forEach(r => r.children.forEach(c => { if (c.type === type) s += c.twh; })); return s;
 }
@@ -753,26 +624,27 @@ function regionSumType(regionId, yearData, type) {
 }
 
 const kpiDefs = [
-  { id: 'kTotal', label: 'Total DC Electricity', unit: 'TWh', v24: 415, v30: 945, fmt: v => Math.round(v) },
-  { id: 'kGrowth', label: 'Growth', unit: '', v24: 0, v30: 128, fmt: v => '+' + Math.round(v) + '%', single: true },
-  { id: 'kFossilPct', label: 'Fossil Share', unit: '', v24: 60, v30: 51, fmt: v => Math.round(v) + '%' },
-  { id: 'kCleanPct', label: 'Clean Share', unit: '', v24: 40, v30: 49, fmt: v => Math.round(v) + '%' },
-  { id: 'kCO2', label: 'CO\u2082 Emissions', unit: 'Mt', v24: 180, v30: 320, fmt: v => Math.round(v) }
+  { id: 'kTotal', label: 'Total DC Electricity', unit: 'TWh', v24: 415, v30: 945, color: '--c1', fmt: v => Math.round(v) },
+  { id: 'kGrowth', label: 'Growth', unit: '%', v24: 0, v30: 128, color: '--c3', fmt: v => '+' + Math.round(v) + '%', single: true },
+  { id: 'kFossilPct', label: 'Fossil Share', unit: '', v24: 60, v30: 51, color: '--c2', fmt: v => Math.round(v) + '%' },
+  { id: 'kCleanPct', label: 'Clean Share', unit: '', v24: 40, v30: 49, color: '--c4', fmt: v => Math.round(v) + '%' },
+  { id: 'kCO2', label: 'CO\u2082 Emissions', unit: 'Mt', v24: 180, v30: 320, color: '--c3', fmt: v => Math.round(v) }
 ];
 
 const kpiStrip = document.getElementById('kpiStrip');
 kpiDefs.forEach(k => {
   const div = document.createElement('div');
-  div.className = 'context-item';
+  div.className = 'kpi-item';
   div.id = k.id;
+  div.style.borderColor = 'var(' + k.color + ')';
   if (k.single) {
-    div.innerHTML = '<div class="kpi-value"><span class="kv">' + k.fmt(k.v30) + '</span></div>' +
-      '<div class="context-desc">' + k.label + '</div>';
+    div.innerHTML = '<div class="t-kpi-num" style="color:var(' + k.color + ')"><span class="kv">' + k.fmt(k.v30) + '</span></div>' +
+      '<div class="t-kpi-desc">' + k.label + '</div>';
   } else {
-    div.innerHTML = '<div class="kpi-value"><span class="kv24">' + k.fmt(k.v24) + '</span>' +
-      '<span class="kpi-arrow">\u2192</span><span class="kv30">' + k.fmt(k.v30) + '</span></div>' +
-      (k.unit ? '<div class="kpi-unit">' + k.unit + '</div>' : '') +
-      '<div class="context-desc">' + k.label + '</div>';
+    div.innerHTML = '<div class="t-kpi-num" style="color:var(' + k.color + ')"><span class="kv24">' + k.fmt(k.v24) + '</span>' +
+      '<span class="kpi-arrow">\u2192</span><span class="kv30">' + k.fmt(k.v30) + '</span>' +
+      (k.unit ? '<span class="kpi-unit">' + k.unit + '</span>' : '') + '</div>' +
+      '<div class="t-kpi-desc">' + k.label + '</div>';
   }
   kpiStrip.appendChild(div);
 });
@@ -835,7 +707,7 @@ function showTip(ev, html) {
 }
 function hideTip() { tip.style.opacity = 0; }
 
-/* ═══ INTERACTIONS: HOVER ═══ */
+/* ═══ INTERACTIONS: HOVER (cross-highlight) ═══ */
 let selectedRegion = null;
 
 function attachHover(cellMap, otherMap) {
@@ -883,13 +755,10 @@ function resetHighlight() {
   crossLine.attr('opacity', 0);
   [cellMap24, cellMap30].forEach(m => {
     m.forEach(e => {
-      e.el.attr('filter', null).attr('stroke-width', 0.5)
-        .style('fill-opacity', null).style('stroke-opacity', null);
+      e.el.attr('filter', null).attr('opacity', 1).attr('stroke-opacity', 0.25).attr('stroke-width', 0.5);
     });
   });
-  svg.selectAll('.pborder').attr('stroke-width', 1).attr('stroke-opacity', 0.3);
-  svg.selectAll('.plabel').style('opacity', '1');
-  svg.selectAll('.clabel').style('opacity', '0.75');
+  svg.selectAll('.pborder').attr('stroke-width', 2).attr('stroke-opacity', 0.4);
 }
 
 attachHover(cellMap24, cellMap30);
@@ -918,25 +787,19 @@ function highlightRegion(rid) {
   [cellMap24, cellMap30].forEach(m => {
     m.forEach(e => {
       if (e.data.regionId === rid) {
-        e.el.attr('filter', 'url(#glow-s)').attr('stroke-width', 1.5)
-          .style('fill-opacity', '0.85').style('stroke-opacity', '0.8');
+        e.el.attr('filter', 'url(#glow-s)').attr('opacity', 1).attr('stroke-opacity', 0.8).attr('stroke-width', 1.5);
       } else {
-        e.el.attr('filter', null).attr('stroke-width', 0.5)
-          .style('fill-opacity', '0.08').style('stroke-opacity', '0.05');
+        e.el.attr('filter', null).attr('opacity', 0.15).attr('stroke-opacity', 0.1).attr('stroke-width', 0.5);
       }
     });
   });
   svg.selectAll('.pborder').each(function() {
     const d = d3.select(this).datum();
     if (d && d.data.id === rid) {
-      d3.select(this).attr('stroke-width', 2).attr('stroke-opacity', 0.6);
+      d3.select(this).attr('stroke-width', 3).attr('stroke-opacity', 0.8);
     } else {
-      d3.select(this).attr('stroke-width', 0.5).attr('stroke-opacity', 0.05);
+      d3.select(this).attr('stroke-width', 1).attr('stroke-opacity', 0.1);
     }
-  });
-  svg.selectAll('.plabel, .clabel').each(function() {
-    const r = d3.select(this).attr('data-region');
-    d3.select(this).style('opacity', r === rid ? '1' : '0.1');
   });
 }
 
@@ -992,18 +855,28 @@ document.addEventListener('click', function(ev) {
   }
 });
 
-/* ═══ LOADING SEQUENCE (EX-8) ═══ */
+/* ═══ THEME TOGGLE ═══ */
+const themeBtn = document.getElementById('themeBtn');
+let isDark = true;
+themeBtn.addEventListener('click', () => {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  themeBtn.innerHTML = isDark ? '&#9790;' : '&#9728;';
+  refreshColors();
+});
+
+/* ═══ PIZZA SLICE ASSEMBLE (EX-8) ═══ */
 window.addEventListener('load', function() {
   const tl = gsap.timeline({ delay: 0.3 });
 
   svg.style('overflow', 'visible');
   document.getElementById('chartWrap').style.overflow = 'visible';
 
-  // Phase 0: Hide loader, show frame
+  // Phase 0: Hide loader, show page
   tl.to('#loader', { opacity: 0, duration: 0.4, ease: 'power2.out', onComplete: () => {
     document.getElementById('loader').classList.add('hide');
   }});
-  tl.to('#mainFrame', { opacity: 1, duration: 0.3 }, '-=0.2');
+  tl.to('#mainPage', { opacity: 1, duration: 0.3 }, '-=0.2');
 
   // Phase 1: F5 outline draw-in
   [seg24Outline, seg30Outline].forEach(p => {
@@ -1062,7 +935,7 @@ window.addEventListener('load', function() {
       .attr('stroke-width', 2);
   });
   tl.to(mainG.selectAll('.cell').nodes(), {
-    attr: { 'stroke-opacity': 0.15, 'stroke-width': 0.5 },
+    attr: { 'stroke-opacity': 0.25, 'stroke-width': 0.5 },
     duration: 0.6, ease: 'power2.out',
     onComplete: () => { mainG.selectAll('.cell').attr('filter', null); }
   });
@@ -1079,7 +952,7 @@ window.addEventListener('load', function() {
   });
 
   // Phase 3: Borders + labels + annotations
-  tl.to(svg.selectAll('.pborder').nodes(), { attr: { 'stroke-opacity': 0.3 }, duration: 0.5, stagger: 0.04, ease: 'power2.out' }, '-=0.4');
+  tl.to(svg.selectAll('.pborder').nodes(), { attr: { 'stroke-opacity': 0.4 }, duration: 0.5, stagger: 0.04, ease: 'power2.out' }, '-=0.4');
   tl.to(svg.selectAll('.plabel').nodes(), { opacity: 1, duration: 0.5, stagger: 0.04, ease: 'power2.out' }, '-=0.1');
   tl.to(svg.selectAll('.clabel').nodes(), { opacity: 0.75, duration: 0.4, stagger: 0.02, ease: 'power2.out' }, '-=0.3');
   tl.to(svg.selectAll('.ylbl').nodes(), { opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power2.out' }, '-=0.3');

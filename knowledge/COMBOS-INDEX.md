@@ -52,27 +52,56 @@ Stage 2에서 이 파일을 먼저 읽고 조합을 결정한다.
 
 ## 콤보 → 기본 템플릿 매핑
 
-| 콤보 | 기본 템플릿 | 이유 |
-|------|-------------|------|
-| COMBO-1 GLOBE | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-2 DASHBOARD | D (Dashboard) | 다중 차트 그리드 |
-| COMBO-3 SCROLL | B (Scroll) | 스크롤 스토리텔링 |
-| COMBO-4 SANKEY | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-5 MAP | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-6 NETWORK | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-7 DECKGL | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-8 TIMELINE | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-9 VORONOI | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-10 GLOBE-SANKEY | B (Scroll) | 스크롤 기반 씬 전환 |
-| COMBO-11 RADIAL | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-12 CHORD | A (Interactive) | 풀블리드 단일 시각화 |
-| COMBO-13 BEESWARM | A (Interactive) | 풀블리드 단일 시각화 |
+| 콤보 | 기본 템플릿 | Legacy 매핑 | 이유 |
+|------|-------------|-------------|------|
+| COMBO-1 GLOBE | **Template E (poster)** | A (Interactive) (legacy) | 풀블리드 단일 시각화 |
+| COMBO-2 DASHBOARD | **Template E (poster)** | D (Dashboard) (legacy) | 다중 차트 그리드 |
+| COMBO-3 SCROLL | **Template E (poster)** | B (Scroll) (legacy) | 스크롤 스토리텔링 |
+| COMBO-4 SANKEY | **Template E (poster)** | A (Interactive) (legacy) | 흐름/배분 다이어그램 |
+| COMBO-5 MAP | **Template E (poster)** | A (Interactive) (legacy) | 풀블리드 단일 시각화 |
+| COMBO-6 NETWORK | **Template E (poster)** | A (Interactive) (legacy) | 풀블리드 단일 시각화 |
+| COMBO-7 DECKGL | **Template E (poster)** | A (Interactive) (legacy) | 대규모 지리공간 |
+| COMBO-8 TIMELINE | **Template E (poster)** | A (Interactive) (legacy) | 풀블리드 단일 시각화 |
+| COMBO-9 VORONOI | **Template E (poster)** | A (Interactive) (legacy) | 유기적 셀 기반 계층 |
+| COMBO-10 GLOBE-SANKEY | **Template E (poster)** | B (Scroll) (legacy) | 스크롤 기반 씬 전환 |
+| COMBO-11 RADIAL | **Template E (poster)** | A (Interactive) (legacy) | 풀블리드 단일 시각화 |
+| COMBO-12 CHORD | **Template E (poster)** | A (Interactive) (legacy) | 풀블리드 단일 시각화 |
+| COMBO-13 BEESWARM | **Template E (poster)** | A (Interactive) (legacy) | 풀블리드 단일 시각화 |
 
-> Template C (Report/Poster)는 사용자가 "보고서", "포스터", "인포그래픽"을 명시할 때만 수동 선택한다.
+> Template A~D는 legacy로 유지한다. 사용자가 명시적으로 요청할 때만 사용한다.
 
-## 색상 규칙
 
-- 실제 출력 색상은 선택된 템플릿의 `:root` CSS 변수(`--c1`~`--c6`, `--c1-60`~`--c6-60`, `--c1-30`~`--c6-30`)를 사용한다.
-- 콤보 파일의 HEX 값은 참고용이며, 코드에 직접 사용하지 않는다.
-- 예외: Three.js `scene.background`, 3D 환경 material 등 CSS 변수가 적용 불가능한 경우에만 콤보 파일의 HEX 값을 사용할 수 있다.
-- Stage 3 design-doc.md에서 색상 배정 테이블을 반드시 작성하고, 이 테이블의 CSS 변수만 코드에 사용한다.
+## Template E (poster) — 슬롯 정리표
+
+| 슬롯 | 위치 | 설명 |
+|------|------|------|
+| `{{title}}` | header > h1 | 대제목 |
+| `{{subtitle_description}}` | header > p | 부제목 |
+| `{{brand_name}}` | header 우상단 + footer 우측 | 브랜드명 |
+| `{{kpi_value_1~4}}` | context-bar | KPI 숫자 |
+| `{{kpi_unit_1~4}}` | context-bar | KPI 단위 |
+| `{{context_title_3}}` | context-bar 3번째 | 제목형 KPI |
+| `{{context_description_1~4}}` | context-bar | KPI 설명 |
+| `{{insight_title_1~3}}` | insight-area | 인사이트 제목 |
+| `{{insight_description_1~3}}` | insight-area | 인사이트 설명 |
+| `{{source_text}}` | footer | 출처 |
+| `#chart-slot` | middle-section 우측 | 차트 삽입 영역 |
+| `data-theme` | html 속성 | `"dark"` 또는 `"light"` |
+| `data-layout` | infographic-frame 속성 | `"portrait"` 또는 `"landscape"` |
+
+### Template E 구조
+
+```
+infographic-frame
+├── header          — title + subtitle + brand-logo
+├── middle-section  — grid(0.7fr + 3fr)
+│   ├── context-bar — KPI ×4 (세로 스택, divider 구분)
+│   └── #chart-slot — 차트 영역 (border-radius 16px, 3D shadow)
+├── insight-area    — 3-column grid (인사이트 카드 ×3)
+└── footer          — source + brand
+```
+
+### 색상 규칙
+- Template E는 자체 CSS 변수 시스템(`--bg-color`, `--text-primary`, `--accent-color` 등)을 사용한다.
+- 차트 내부 색상은 프로젝트별 design-doc.md 색 배정 테이블을 따른다.
+- `--accent-color`는 KPI 숫자 강조에 사용된다 (light: `#E63946`, dark: `#4DABF7`).

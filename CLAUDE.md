@@ -48,11 +48,15 @@
 - ⏸️ 사용자 확인: "이 설계 문서를 리뷰해주세요. 수정할 부분이 있나요?"
 
 ### Stage 4 — Code Generation (3단계 분할)
-- 4-A: 템플릿 선택 + 복사. knowledge/templates/에서 적합한 템플릿을 선택하고
-       output/[project-name]/index.html로 복사한 뒤 {{변수}}만 교체한다.
+- 4-A: 템플릿 복사. knowledge/templates/template-E-poster.html을
+       output/[project-name]/index.html로 복사한 뒤 {{변수}}를 교체한다.
        템플릿의 :root CSS 변수·레이아웃·폰트는 절대 수정하지 않는다.
-       템플릿 선택 기준은 knowledge/COMBOS-INDEX.md의 "콤보 → 템플릿 매핑" 참조.
+       프레임은 data-theme="light" 유지, #chart-slot만 dark background(#0B0B1A).
+       차트 코드(SVG, script, chart CSS)는 #chart-slot 안에만 삽입한다.
+       차트 CSS는 .chart-area 하위로 scope하여 프레임 CSS와 충돌 방지.
+       data-layout은 기본 "portrait", 가로형 차트일 때만 "landscape".
   - ⏸️ 사용자 확인: "브라우저에서 열어서 레이아웃/색감을 확인해주세요."
+
 - 4-B: 코어 시각화 로직. 테스트용 하드코딩 데이터 3~5개로 렌더링 확인.
        차트 코드의 색상은 COMBO 파일의 HEX가 아니라 design-doc.md의 색 배정 테이블을 따른다.
   - ⏸️ 사용자 확인: "시각화가 정상적으로 렌더링되나요?"
